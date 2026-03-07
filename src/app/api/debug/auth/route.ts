@@ -23,7 +23,7 @@ export async function GET() {
     }
 
     // 4. Check if workspaces table has RLS enabled and policies
-    const { data: policies, error: policiesError } = await supabase
+    const { data: _policies, error: policiesError } = await supabase
       .from("workspaces")
       .select("id")
       .limit(0);
@@ -44,7 +44,8 @@ export async function GET() {
       workspacesCount: count,
       countError: countError?.message || null,
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

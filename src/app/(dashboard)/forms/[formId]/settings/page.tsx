@@ -97,7 +97,7 @@ export default function SettingsPage() {
     <div className="p-6 space-y-6 max-w-3xl animate-fade-in">
       <div className="flex items-center justify-between animate-fade-in-up">
         <h2 className="text-xl font-semibold">Settings</h2>
-        <Button onClick={handleSave} disabled={saving} className="active-press hover-lift">
+        <Button onClick={() => void handleSave()} disabled={saving} className="active-press hover-lift">
           {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
           Save
         </Button>
@@ -154,7 +154,7 @@ export default function SettingsPage() {
                   type="button"
                   variant="outline"
                   size="icon"
-                  onClick={handleCopyLink}
+                  onClick={() => void handleCopyLink()}
                   className="shrink-0"
                 >
                   <Copy className="h-4 w-4" />
@@ -284,7 +284,7 @@ export default function SettingsPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--destructive))]/90">
+                <AlertDialogAction onClick={() => void handleDelete()} className="bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] hover:bg-[hsl(var(--destructive))]/90">
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>

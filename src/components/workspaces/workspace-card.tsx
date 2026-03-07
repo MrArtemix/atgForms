@@ -2,7 +2,6 @@
 
 import { Workspace } from "@/types/workspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Building2, Users } from "lucide-react";
 import Link from "next/link";
 import { formatRelative } from "@/lib/utils/date";

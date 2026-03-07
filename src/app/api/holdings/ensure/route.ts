@@ -86,10 +86,11 @@ export async function POST() {
         });
 
         return NextResponse.json(holding);
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("Ensure holding error:", err);
+        const message = err instanceof Error ? err.message : "Internal server error";
         return NextResponse.json(
-            { error: err?.message || "Internal server error" },
+            { error: message },
             { status: 500 }
         );
     }

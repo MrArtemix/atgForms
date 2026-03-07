@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
 import { Workspace, WorkspaceRole } from "@/types/workspace";
-import { slugify } from "@/lib/utils/slugify";
 
 // Helper: get a supabase client with a verified fresh session
 async function getAuthenticatedClient() {

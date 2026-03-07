@@ -240,7 +240,7 @@ export function Header({ user }: HeaderProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-[hsl(var(--destructive))]"
-                onClick={handleSignOut}
+                onClick={() => void handleSignOut()}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Déconnexion

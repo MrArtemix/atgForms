@@ -6,6 +6,7 @@ import { useForm } from "@/lib/hooks/use-form";
 import { useFormBuilderStore } from "@/stores/form-builder-store";
 import { useAutoSave } from "@/lib/hooks/use-auto-save";
 import { formService } from "@/lib/services/form-service";
+import type { Form } from "@/types/form";
 import { BuilderLayout } from "@/components/builder/builder-layout";
 import { DndProvider } from "@/components/builder/dnd-provider";
 import { BuilderSaveProvider } from "@/components/builder/builder-save-context";
@@ -42,7 +43,7 @@ export default function FormEditPage() {
       await formService.updateForm(state.formId, {
         title: state.title,
         description: state.description || null,
-      } as any);
+      } as Partial<Form>);
       await formService.savePagesAndFields(
         state.formId,
         state.pages,

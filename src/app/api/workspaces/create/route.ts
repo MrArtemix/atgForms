@@ -96,8 +96,9 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json(workspace);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("POST /api/workspaces/create error:", error);
-        return new NextResponse(error.message || "Internal Server Error", { status: 500 });
+        const message = error instanceof Error ? error.message : "Internal Server Error";
+        return new NextResponse(message, { status: 500 });
     }
 }

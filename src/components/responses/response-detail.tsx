@@ -113,7 +113,7 @@ export function ResponseDetail({ response, fields, formId, formTitle }: Response
                 {docTemplates.map(template => (
                   <DropdownMenuItem
                     key={template.id}
-                    onClick={() => handleGeneratePdf(template)}
+                    onClick={() => void handleGeneratePdf(template)}
                     disabled={isGenerating !== null}
                     className="cursor-pointer"
                   >

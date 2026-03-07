@@ -15,7 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils/cn";
-import { Check, Palette } from "lucide-react";
+import { Palette } from "lucide-react";
 import { useState } from "react";
 
 interface ThemeCustomizerProps {
@@ -175,7 +175,7 @@ export function ThemeCustomizer({ theme, onChange }: ThemeCustomizerProps) {
             <Label className="text-xs">Motif</Label>
             <Select
               value={theme.background_pattern || "none"}
-              onValueChange={(v) => onChange({ background_pattern: v as any })}
+              onValueChange={(v) => onChange({ background_pattern: v as FormTheme["background_pattern"] })}
             >
               <SelectTrigger>
                 <SelectValue />

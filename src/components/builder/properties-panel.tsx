@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { X, Plus, GripVertical, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
 import { FieldOption } from "@/types/field-types";
 
 export function PropertiesPanel() {

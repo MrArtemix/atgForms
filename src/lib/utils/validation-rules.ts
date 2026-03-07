@@ -1,4 +1,4 @@
-import { FieldType, ValidationRules, FormField } from "@/types/field-types";
+import { ValidationRules, FormField } from "@/types/field-types";
 import { FieldValue } from "@/stores/form-renderer-store";
 import { isLayoutField } from "@/lib/constants/field-types";
 

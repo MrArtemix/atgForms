@@ -35,7 +35,7 @@ export default function AuthLayout({
             Créez des formulaires que vos utilisateurs adorent remplir
           </h2>
           <p className="text-white/70 leading-relaxed animate-fade-in-up animate-stagger-2 text-sm lg:text-base">
-            Constructeur drag-and-drop, logique conditionnelle, analytics en temps réel et collaboration d'équipe — tout dans une plateforme puissante.
+            Constructeur drag-and-drop, logique conditionnelle, analytics en temps réel et collaboration d&apos;équipe — tout dans une plateforme puissante.
           </p>
           
           <div className="mt-8 lg:mt-12 grid grid-cols-3 gap-3 lg:gap-4 animate-fade-in-up animate-stagger-3">
@@ -73,7 +73,7 @@ export default function AuthLayout({
             href="/"
             className="mb-6 hidden md:inline-flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))] transition-colors hover:text-[hsl(var(--foreground))]"
           >
-            &larr; Retour à l'accueil
+            &larr; Retour à l&apos;accueil
           </Link>
 
           <div className="animate-scale-in">

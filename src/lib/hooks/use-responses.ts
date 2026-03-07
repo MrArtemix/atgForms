@@ -35,7 +35,7 @@ export function useResponses(formId: string | null) {
   );
 
   useEffect(() => {
-    fetchResponses();
+    void fetchResponses();
   }, [fetchResponses]);
 
   return { responses, count, loading, refetch: fetchResponses };
@@ -70,7 +70,7 @@ export function useResponse(responseId: string | null) {
       setLoading(false);
     }
 
-    fetch();
+    void fetch();
   }, [responseId]);
 
   return { response, loading };
@@ -95,7 +95,7 @@ export function useFormAnalytics(formId: string | null) {
       setLoading(false);
     }
 
-    fetch();
+    void fetch();
   }, [formId]);
 
   return { analytics, loading };

@@ -86,7 +86,7 @@ export default function TemplatesPage() {
         setLoading(false);
       }
     }
-    load();
+    void load();
   }, []);
 
   // Reset category on tab change
@@ -296,7 +296,7 @@ export default function TemplatesPage() {
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Utilisé {template.use_count} fois</span>
-                    <Button size="sm" onClick={() => handleUseFormTemplate(template)} className="active-press">
+                    <Button size="sm" onClick={() => void handleUseFormTemplate(template)} className="active-press">
                       Utiliser <ArrowRight className="h-3.5 w-3.5 ml-1" />
                     </Button>
                   </div>
@@ -334,7 +334,7 @@ export default function TemplatesPage() {
                     <Button
                       size="sm"
                       variant="secondary"
-                      onClick={() => handlePreviewDocTemplate(template)}
+                      onClick={() => void handlePreviewDocTemplate(template)}
                       disabled={isGeneratingPreview === template.id}
                       className="active-press"
                     >
@@ -378,7 +378,7 @@ export default function TemplatesPage() {
               </Button>
               <Button onClick={handleDownloadPreview} className="hover-lift active-press">
                 <Download className="mr-2 h-4 w-4" />
-                Télécharger l'exemple
+                Télécharger l&apos;exemple
               </Button>
             </div>
           </DialogFooter>

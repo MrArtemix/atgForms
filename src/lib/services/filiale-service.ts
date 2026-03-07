@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { Filiale, FilialeMember, FilialeRole, FilialeWithProjets } from "@/types/filiale";
 import { Workspace } from "@/types/workspace";
-import { slugify } from "@/lib/utils/slugify";
 
 async function getAuthenticatedClient() {
     const supabase = createClient();

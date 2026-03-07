@@ -38,7 +38,7 @@ export function useAutoSave(saveFunction: () => Promise<void>) {
     }
 
     timeoutRef.current = setTimeout(() => {
-      performSave();
+      void performSave();
     }, LIMITS.autoSave.debounceMs);
 
     return () => {

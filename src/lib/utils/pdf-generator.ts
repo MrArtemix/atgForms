@@ -40,16 +40,15 @@ function substitutePlaceholders(text: string, fields: FormField[], response: Res
 
 function hexToRgb(hex: string): [number, number, number] {
     if (!/^#([0-9A-F]{3}){1,2}$/i.test(hex)) return [0, 0, 0];
-    let c: any;
-    if (hex.length == 4) {
-        c = hex.substring(1).split('');
-        c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-        c = c.join('');
+    let expanded: string;
+    if (hex.length === 4) {
+        const chars = hex.substring(1).split('');
+        expanded = [chars[0], chars[0], chars[1], chars[1], chars[2], chars[2]].join('');
     } else {
-        c = hex.substring(1);
+        expanded = hex.substring(1);
     }
-    c = '0x' + c;
-    return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
+    const num = parseInt(expanded, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
 
 export async function generateDocumentPDF(
@@ -104,7 +103,7 @@ export async function generateDocumentPDF(
             y = margins.top + padding;
         }
 
-        let x = align === "center" ? pageWidth / 2 : margins.left + (hStyle?.backgroundColor ? padding : 0);
+        const x = align === "center" ? pageWidth / 2 : margins.left + (hStyle?.backgroundColor ? padding : 0);
 
         doc.setTextColor(...hexToRgb(hStyle?.textColor || primaryColor));
         doc.setFont("helvetica", "bold");
@@ -175,7 +174,7 @@ export async function generateDocumentPDF(
                 }
 
                 let textX = margins.left + padding;
-                let textY = y + padding + (lineHeight * 0.7); // Adjust baseline
+                const textY = y + padding + (lineHeight * 0.7); // Adjust baseline
 
                 if (align === "center") {
                     textX = pageWidth / 2;
@@ -183,7 +182,7 @@ export async function generateDocumentPDF(
                     textX = pageWidth - margins.right - padding;
                 }
 
-                doc.text(lines, textX, textY, { align: align as any });
+                doc.text(lines, textX, textY, { align: align as "left" | "center" | "right" | "justify" });
                 y += boxHeight + 6;
 
                 // reset color to default text
@@ -202,7 +201,7 @@ export async function generateDocumentPDF(
                 // Keep track of rows actually rendered
                 let renderCount = 0;
 
-                fields.forEach((field, idx) => {
+                fields.forEach((field, _idx) => {
                     if (!labelsToInclude.includes(field.label.toLowerCase())) return;
 
                     checkPageBreak(12);
@@ -298,7 +297,7 @@ export async function generateDocumentPDF(
     }
 
     if (layout.footer) {
-        const pageCount = (doc as any).internal.getNumberOfPages();
+        const pageCount = doc.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             const footerY = pageHeight - (margins.bottom / 2);

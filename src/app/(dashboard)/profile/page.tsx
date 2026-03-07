@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Save, Loader2, User } from "lucide-react";
 import { PageHeader, PageShell } from "@/components/layout/page-shell";
-import { cn } from "@/lib/utils/cn";
 
 export default function ProfilePage() {
   const { user, profile, loading } = useUser();
@@ -85,7 +84,7 @@ export default function ProfilePage() {
             <Label>Email</Label>
             <Input value={profile?.email || ""} disabled className="opacity-60" />
           </div>
-          <Button onClick={handleSave} disabled={saving} className="active-press hover-lift">
+          <Button onClick={() => void handleSave()} disabled={saving} className="active-press hover-lift">
             {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
             Enregistrer
           </Button>

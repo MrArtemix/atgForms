@@ -27,7 +27,7 @@ interface ResponseTableProps {
 export function ResponseTable({
   responses,
   totalCount,
-  fields,
+  fields: _fields,
   page,
   pageSize,
   onPageChange,
@@ -64,7 +64,7 @@ export function ResponseTable({
                 className="pl-8 w-[200px] transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
               />
             </div>
-            <Button variant="outline" size="sm" onClick={() => onExport("csv")} className="hover-lift">
+            <Button variant="outline" size="sm" onClick={() => void onExport("csv")} className="hover-lift">
               <Download className="h-4 w-4 mr-1" />
               Export
             </Button>
@@ -121,7 +121,7 @@ export function ResponseTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-[hsl(var(--destructive))] hover:bg-[hsl(var(--destructive))]/10 transition-colors"
-                        onClick={() => onDeleteResponse(response.id)}
+                        onClick={() => void onDeleteResponse(response.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

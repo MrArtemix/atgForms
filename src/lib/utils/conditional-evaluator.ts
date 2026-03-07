@@ -5,7 +5,7 @@ import { FieldValue } from "@/stores/form-renderer-store";
 export function evaluateConditions(
   conditionalLogic: ConditionalLogic,
   answers: Record<string, FieldValue>,
-  fields: FormField[]
+  _fields: FormField[]
 ): boolean {
   const { conditions, logic } = conditionalLogic;
 

@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Copy, Check, QrCode, Code, Mail, Link as LinkIcon, ExternalLink } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { cn } from "@/lib/utils/cn";
 
 interface ShareDialogProps {
   open: boolean;
@@ -24,8 +23,8 @@ export function ShareDialog({
   open,
   onOpenChange,
   formUrl,
-  formTitle,
-  formSlug,
+  formTitle: _formTitle,
+  formSlug: _formSlug,
   embedUrl,
 }: ShareDialogProps) {
   const [copied, setCopied] = useState<string | null>(null);
@@ -74,7 +73,7 @@ export function ShareDialog({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => copyToClipboard(formUrl, "link")}
+                  onClick={() => void copyToClipboard(formUrl, "link")}
                   className="transition-all duration-200"
                 >
                   {copied === "link" ? (
@@ -104,7 +103,7 @@ export function ShareDialog({
               </p>
               <Button
                 variant="outline"
-                onClick={() => copyToClipboard(formUrl, "qr")}
+                onClick={() => void copyToClipboard(formUrl, "qr")}
                 className="hover-lift"
               >
                 {copied === "qr" ? (
@@ -130,7 +129,7 @@ export function ShareDialog({
               <Button
                 variant="outline"
                 className="w-full hover-lift"
-                onClick={() => copyToClipboard(embedCode, "embed")}
+                onClick={() => void copyToClipboard(embedCode, "embed")}
               >
                 {copied === "embed" ? (
                   <Check className="h-4 w-4 mr-2 text-green-500 animate-scale-in" />

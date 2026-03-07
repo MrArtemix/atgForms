@@ -22,7 +22,6 @@ export default function FormLayout({ children }: { children: React.ReactNode }) 
   const formId = params.formId as string;
 
   // For edit page, use full height without tab bar
-  const currentTab = tabs.find(t => pathname.includes(`/${t.href}`));
   const isEditPage = pathname.endsWith("/edit");
 
   if (isEditPage) {

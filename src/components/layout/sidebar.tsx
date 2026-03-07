@@ -10,7 +10,6 @@ import {
   LayoutDashboard,
   Layout,
   Building2,
-  User,
   Plus,
   PanelLeftClose,
   PanelLeft,

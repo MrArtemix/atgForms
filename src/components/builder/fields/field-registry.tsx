@@ -4,6 +4,7 @@ import React from "react";
 import { FieldType } from "@/types/field-types";
 import { ComponentType } from "react";
 import { FormField } from "@/types/field-types";
+import { FieldValue } from "@/stores/form-renderer-store";
 
 import { ShortTextField } from "./short-text-field";
 import { LongTextField } from "./long-text-field";
@@ -29,8 +30,8 @@ import { ImageUploadField } from "./image-upload-field";
 export interface FieldComponentProps {
   field: FormField;
   mode: "builder" | "renderer";
-  value?: any;
-  onChange?: (value: any) => void;
+  value?: FieldValue;
+  onChange?: (value: FieldValue) => void;
   error?: string;
 }
 

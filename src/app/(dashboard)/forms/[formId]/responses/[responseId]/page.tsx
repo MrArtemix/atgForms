@@ -53,7 +53,7 @@ export default function ResponseDetailPage() {
                 setLoading(false);
             }
         }
-        fetchResponse();
+        void fetchResponse();
     }, [responseId]);
 
     if (formLoading || loading) {
@@ -80,14 +80,14 @@ export default function ResponseDetailPage() {
     const handleProduceDoc = async () => {
         setIsGenerating(true);
         try {
-            const responseData: Record<string, any> = {};
+            const responseData: Record<string, string | number> = {};
             const supabase = createClient();
 
             form.fields.forEach(field => {
                 if (["section_header", "paragraph_text"].includes(field.type)) return;
                 const answer = response.answers.find(a => a.field_id === field.id);
 
-                let value: any = "-";
+                let value: string | number = "-";
                 if (answer) {
                     if (answer.value_text) value = answer.value_text;
                     else if (answer.value_number !== null && answer.value_number !== undefined) value = answer.value_number;
@@ -96,8 +96,8 @@ export default function ResponseDetailPage() {
                     else if (answer.value_time) value = answer.value_time;
                     else if (answer.value_json) {
                         const jsonVal = answer.value_json;
-                        if (Array.isArray(jsonVal) && typeof jsonVal[0] === 'string' && jsonVal[0].includes('/')) {
-                            value = jsonVal.map(path => supabase.storage.from("response-uploads").getPublicUrl(path).data.publicUrl).join(", ");
+                        if (Array.isArray(jsonVal) && typeof jsonVal[0] === 'string' && (jsonVal[0] as string).includes('/')) {
+                            value = jsonVal.map((path: unknown) => supabase.storage.from("response-uploads").getPublicUrl(String(path)).data.publicUrl).join(", ");
                         } else {
                             value = Array.isArray(jsonVal) ? (jsonVal as string[]).join(", ") : JSON.stringify(jsonVal);
                         }
@@ -129,12 +129,13 @@ export default function ResponseDetailPage() {
                 title: "Succès",
                 description: "Le document est prêt à être prévisualisé.",
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Génération PDF:", error);
+            const message = error instanceof Error ? error.message : "Erreur serveur";
             toast({
                 title: "Erreur",
                 variant: "destructive",
-                description: `Échec de la génération du document: ${error.message || "Erreur serveur"}`,
+                description: `Échec de la génération du document: ${message}`,
             });
         } finally {
             setIsGenerating(false);
@@ -164,7 +165,7 @@ export default function ResponseDetailPage() {
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Retour
                         </Button>
-                        <Button onClick={handleProduceDoc} disabled={isGenerating} className="hover-lift active-press">
+                        <Button onClick={() => void handleProduceDoc()} disabled={isGenerating} className="hover-lift active-press">
                             {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4" />}
                             Produire un doc
                         </Button>

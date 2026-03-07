@@ -1,10 +1,9 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import {
   DndContext,
   DragEndEvent,
-  DragStartEvent,
   PointerSensor,
   KeyboardSensor,
   closestCenter,

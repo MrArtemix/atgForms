@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Form, FormPage, FormWithDetails } from "@/types/form";
+import { FormPage, FormWithDetails } from "@/types/form";
 import { FormField } from "@/types/field-types";
 import { FormTheme } from "@/types/theme";
 
@@ -54,7 +54,7 @@ export function useForm(formId: string | null) {
   }, [formId]);
 
   useEffect(() => {
-    fetchForm();
+    void fetchForm();
   }, [fetchForm]);
 
   return { form, loading, error, refetch: fetchForm };

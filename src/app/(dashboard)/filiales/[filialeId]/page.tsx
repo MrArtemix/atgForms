@@ -50,9 +50,9 @@ export default function FilialeDetailPage() {
             setDialogOpen(false);
             setProjetName("");
             setProjetDescription("");
-            refetch();
-        } catch (error: any) {
-            console.error("Failed to create projet:", JSON.stringify(error, null, 2));
+            await refetch();
+        } catch (error: unknown) {
+            console.error("Failed to create projet:", error instanceof Error ? error.message : JSON.stringify(error, null, 2));
             console.error("Erreur de création:", error);
         }
         setCreating(false);
@@ -183,7 +183,7 @@ export default function FilialeDetailPage() {
                             </div>
                             <DialogFooter>
                                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Annuler</Button>
-                                <Button onClick={handleCreateProjet} disabled={creating || !projetName.trim()} className="active-press">
+                                <Button onClick={() => void handleCreateProjet()} disabled={creating || !projetName.trim()} className="active-press">
                                     {creating ? "Création..." : "Créer"}
                                 </Button>
                             </DialogFooter>

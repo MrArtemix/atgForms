@@ -112,8 +112,8 @@ const HEADER_PATTERN_DATA: Record<string, string> = {
 
 function FormHeaderBlock({
   header,
-  theme,
-  themed,
+  theme: _theme,
+  themed: _themed,
 }: {
   header: HeaderSource;
   theme: FormTheme | null;
@@ -174,7 +174,6 @@ export function FormRenderer({ form }: FormRendererProps) {
     currentPageIndex,
     answers,
     errors,
-    visibleFields,
     isSubmitting,
     isSubmitted,
     initRenderer,
@@ -252,9 +251,10 @@ export function FormRenderer({ form }: FormRendererProps) {
     try {
       await responseService.submitResponse(form.id, fields, answers);
       setSubmitted();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Submit error details:", error);
-      setSubmitError(error?.message || "Une erreur est survenue lors de la soumission.");
+      const message = error instanceof Error ? error.message : "Une erreur est survenue lors de la soumission.";
+      setSubmitError(message);
       setSubmitting(false);
     }
   };
@@ -385,7 +385,7 @@ export function FormRenderer({ form }: FormRendererProps) {
               {isLastPage ? (
                 <Button
                   type="button"
-                  onClick={handleSubmit}
+                  onClick={() => void handleSubmit()}
                   disabled={isSubmitting}
                   className="min-w-[140px]"
                   data-theme-primary={themed ? "" : undefined}

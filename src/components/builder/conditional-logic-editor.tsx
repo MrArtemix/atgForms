@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useFormBuilderStore } from "@/stores/form-builder-store";
 import { ConditionalLogic, Condition, ConditionalAction, ConditionalLogicType, ConditionalOperator } from "@/types/conditional-logic";
 import { OPERATOR_LABELS, OPERATORS_BY_FIELD_TYPE } from "@/lib/utils/conditional-evaluator";
@@ -15,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, Zap } from "lucide-react";
 
 interface ConditionalLogicEditorProps {
@@ -23,7 +21,7 @@ interface ConditionalLogicEditorProps {
 }
 
 export function ConditionalLogicEditor({ fieldId }: ConditionalLogicEditorProps) {
-  const { fields, fieldOrder, pages, currentPageId, updateFieldConditionalLogic } =
+  const { fields, updateFieldConditionalLogic } =
     useFormBuilderStore();
   const field = fields[fieldId];
 

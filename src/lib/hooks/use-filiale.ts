@@ -27,7 +27,7 @@ export function useFiliales(holdingId: string | null) {
     }, [holdingId]);
 
     useEffect(() => {
-        fetchFiliales();
+        void fetchFiliales();
     }, [fetchFiliales]);
 
     return { filiales, loading, refetch: fetchFiliales };
@@ -71,7 +71,7 @@ export function useFiliale(filialeId: string | null) {
     }, [filialeId]);
 
     useEffect(() => {
-        fetchFiliale();
+        void fetchFiliale();
     }, [fetchFiliale]);
 
     return { filiale, members, loading, refetch: fetchFiliale };

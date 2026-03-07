@@ -18,16 +18,16 @@ export function ImageUploadField({ field, mode, value, onChange, error }: FieldC
   useEffect(() => {
     if (value && Array.isArray(value) && value.length > 0) {
       if (value[0] instanceof File) {
-        const objectUrls = value.map(file => URL.createObjectURL(file));
+        const objectUrls = (value as File[]).map(file => URL.createObjectURL(file));
         setPreviews(objectUrls);
-        
+
         // Cleanup URLs
         return () => {
           objectUrls.forEach(url => URL.revokeObjectURL(url));
         };
       } else if (typeof value[0] === 'string') {
         // Handle pre-uploaded URLs
-        setPreviews(value);
+        setPreviews(value as string[]);
       }
     } else {
       setPreviews([]);

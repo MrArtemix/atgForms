@@ -87,7 +87,7 @@ export function SignatureField({ field, mode, value, onChange, error }: FieldCom
       setHasStrokes(true);
     };
     img.src = value;
-  }, [mode]); // only on mount, not on every value change
+  }, [mode, value]); // restore when value changes (e.g. navigating back)
 
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;

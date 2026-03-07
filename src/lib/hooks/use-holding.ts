@@ -52,7 +52,7 @@ export function useHolding() {
     }, []);
 
     useEffect(() => {
-        fetchHolding();
+        void fetchHolding();
     }, [fetchHolding]);
 
     return { holding, filiales, loading, refetch: fetchHolding };

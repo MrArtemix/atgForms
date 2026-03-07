@@ -23,7 +23,7 @@ export function ThemePicker({ currentTheme, onSelectTheme }: ThemePickerProps) {
       setThemes(data);
       setLoading(false);
     }
-    load();
+    void load();
   }, []);
 
   /** Un thème système est considéré sélectionné si le thème du formulaire a le même nom (après sauvegarde d'un preset) */

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { timingSafeEqual } from "crypto";
 
 function secureCompare(a: string, b: string): boolean {
@@ -20,8 +19,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { event, form_id, response_id } = body;
-
-    const supabase = createAdminClient();
 
     switch (event) {
       case "response.created": {

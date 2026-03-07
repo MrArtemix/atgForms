@@ -14,6 +14,36 @@ async function getAuthenticatedClient() {
   return { supabase, user: session.user };
 }
 
+// Helper: fetch pages, fields, and theme for a given form
+async function fetchFormDetails(
+  supabase: ReturnType<typeof createClient>,
+  formId: string
+): Promise<{ pages: FormPage[]; fields: FormField[]; theme: FormTheme | null }> {
+  const [pagesResult, fieldsResult, themeResult] = await Promise.all([
+    supabase
+      .from("form_pages")
+      .select("*")
+      .eq("form_id", formId)
+      .order("sort_order"),
+    supabase
+      .from("form_fields")
+      .select("*")
+      .eq("form_id", formId)
+      .order("sort_order"),
+    supabase
+      .from("form_themes")
+      .select("*")
+      .eq("form_id", formId)
+      .maybeSingle(),
+  ]);
+
+  return {
+    pages: (pagesResult.data || []) as FormPage[],
+    fields: (fieldsResult.data || []) as FormField[],
+    theme: (themeResult.data || null) as FormTheme | null,
+  };
+}
+
 export const formService = {
   async createFormFromTemplate(
     workspaceId: string,
@@ -36,8 +66,8 @@ export const formService = {
 
     if (formError || !form) throw formError;
 
-    const def: any = template.form_definition || {};
-    const pagesDef: any[] =
+    const def = template.form_definition || { pages: [], fields: [], theme: null };
+    const pagesDef: Array<Partial<FormPage> & { title?: string; sort_order?: number; description?: string | null }> =
       Array.isArray(def.pages) && def.pages.length > 0
         ? def.pages
         : [{ title: "Page 1", sort_order: 0 }];
@@ -58,7 +88,7 @@ export const formService = {
     if (pagesError) throw pagesError;
 
     const pages = (createdPages || []).sort(
-      (a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+      (a: { sort_order?: number }, b: { sort_order?: number }) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
     );
 
     const firstPageId = pages[0]?.id as string | undefined;
@@ -66,15 +96,15 @@ export const formService = {
     // Map des index de page (0,1,2,...) vers les IDs créés,
     // pour permettre au template de préciser un `page_index` par champ.
     const pageIdByIndex = new Map<number, string>();
-    pages.forEach((p: any, index: number) => {
+    pages.forEach((p: { id: string; sort_order?: number }, index: number) => {
       const idx = typeof p.sort_order === "number" ? p.sort_order : index;
       if (!pageIdByIndex.has(idx)) {
-        pageIdByIndex.set(idx, p.id as string);
+        pageIdByIndex.set(idx, p.id);
       }
     });
 
     // 3) Insérer les champs
-    const fieldsDef: any[] = Array.isArray(def.fields) ? def.fields : [];
+    const fieldsDef: Array<Partial<FormField> & { page_index?: number }> = Array.isArray(def.fields) ? def.fields : [];
     if (fieldsDef.length > 0 && firstPageId) {
       const fieldsToInsert = fieldsDef.map((field, index) => ({
         form_id: form.id,
@@ -104,9 +134,9 @@ export const formService = {
     }
 
     // 4) Thème éventuel
-    const themeDef: Partial<FormTheme> | null = (def.theme as any) || null;
+    const themeDef: Partial<FormTheme> | null = (def.theme as Partial<FormTheme>) || null;
     if (themeDef) {
-      const { name, is_system, ...restTheme } = themeDef as any;
+      const { name, is_system: _is_system, ...restTheme } = themeDef;
       await supabase.from("form_themes").insert({
         form_id: form.id,
         name: name || template.name,
@@ -116,29 +146,11 @@ export const formService = {
     }
 
     // 5) Retourner le formulaire complet
-    const [pagesResult, fieldsResult, themeResult] = await Promise.all([
-      supabase
-        .from("form_pages")
-        .select("*")
-        .eq("form_id", form.id)
-        .order("sort_order"),
-      supabase
-        .from("form_fields")
-        .select("*")
-        .eq("form_id", form.id)
-        .order("sort_order"),
-      supabase
-        .from("form_themes")
-        .select("*")
-        .eq("form_id", form.id)
-        .maybeSingle(),
-    ]);
+    const details = await fetchFormDetails(supabase, form.id);
 
     return {
       ...(form as Form),
-      pages: (pagesResult.data || []) as FormPage[],
-      fields: (fieldsResult.data || []) as any,
-      theme: (themeResult.data || null) as FormTheme | null,
+      ...details,
     };
   },
 
@@ -170,20 +182,15 @@ export const formService = {
 
   async getForm(formId: string): Promise<FormWithDetails> {
     const { supabase } = await getAuthenticatedClient();
-    const [formResult, pagesResult, fieldsResult, themeResult] = await Promise.all([
-      supabase.from("forms").select("*").eq("id", formId).single(),
-      supabase.from("form_pages").select("*").eq("form_id", formId).order("sort_order"),
-      supabase.from("form_fields").select("*").eq("form_id", formId).order("sort_order"),
-      supabase.from("form_themes").select("*").eq("form_id", formId).maybeSingle(),
-    ]);
 
+    const formResult = await supabase.from("forms").select("*").eq("id", formId).single();
     if (formResult.error) throw formResult.error;
+
+    const details = await fetchFormDetails(supabase, formId);
 
     return {
       ...formResult.data,
-      pages: pagesResult.data || [],
-      fields: fieldsResult.data || [],
-      theme: themeResult.data,
+      ...details,
     };
   },
 
@@ -198,17 +205,11 @@ export const formService = {
 
     if (!form) return null;
 
-    const [pagesResult, fieldsResult, themeResult] = await Promise.all([
-      supabase.from("form_pages").select("*").eq("form_id", form.id).order("sort_order"),
-      supabase.from("form_fields").select("*").eq("form_id", form.id).order("sort_order"),
-      supabase.from("form_themes").select("*").eq("form_id", form.id).maybeSingle(),
-    ]);
+    const details = await fetchFormDetails(supabase, form.id);
 
     return {
       ...form,
-      pages: pagesResult.data || [],
-      fields: fieldsResult.data || [],
-      theme: themeResult.data,
+      ...details,
     };
   },
 
@@ -323,16 +324,16 @@ export const formService = {
             required: field.required,
             sort_order: index,
             validation_rules: field.validation_rules,
-            options: field.options as any,
+            options: field.options,
             field_config: field.field_config,
-            conditional_logic: field.conditional_logic as any,
+            conditional_logic: field.conditional_logic,
           });
         }
       });
     });
 
     if (fieldsToSave.length > 0) {
-      const { error: fieldsError } = await supabase.from("form_fields").upsert(fieldsToSave as any);
+      const { error: fieldsError } = await supabase.from("form_fields").upsert(fieldsToSave as unknown as Record<string, unknown>[]);
       if (fieldsError) throw fieldsError;
     }
   },

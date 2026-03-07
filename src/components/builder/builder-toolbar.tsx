@@ -5,7 +5,7 @@ import { useHistoryStore } from "@/stores/history-store";
 import { useBuilderSave } from "@/components/builder/builder-save-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Undo2, Redo2, Eye, Send, Loader2, Cloud, CloudOff, Link as LinkIcon, Check, BarChart3, Settings, Share2, Save } from "lucide-react";
+import { Undo2, Redo2, Eye, Send, Loader2, Cloud, CloudOff, Link as LinkIcon, Check, BarChart3, Settings, Save } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 import { useState, useEffect, useCallback } from "react";
@@ -41,7 +41,7 @@ export function BuilderToolbar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        handleSave();
+        void handleSave();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -109,7 +109,7 @@ export function BuilderToolbar() {
           </div>
         ),
         action: (
-          <ToastAction altText="Copy link" onClick={handleCopy}>
+          <ToastAction altText="Copy link" onClick={() => void handleCopy()}>
             {copied ? (
               <span className="inline-flex items-center gap-1">
                 <Check className="h-3 w-3" />
@@ -178,7 +178,7 @@ export function BuilderToolbar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             className="h-7 px-2 text-xs gap-1"
             title="Enregistrer (Cmd+S)"
           >
@@ -221,15 +221,17 @@ export function BuilderToolbar() {
       <Button
         variant="outline"
         size="sm"
-        onClick={async () => {
-          if (saveNow) {
-            try {
-              await saveNow();
-            } catch (e) {
-              console.error("Save before preview failed:", e);
+        onClick={() => {
+          void (async () => {
+            if (saveNow) {
+              try {
+                await saveNow();
+              } catch (e) {
+                console.error("Save before preview failed:", e);
+              }
             }
-          }
-          window.open(`/forms/${formId}/preview`, "_blank");
+            window.open(`/forms/${formId}/preview`, "_blank");
+          })();
         }}
         className="hover-lift"
       >
@@ -256,7 +258,7 @@ export function BuilderToolbar() {
 
       <Button
         size="sm"
-        onClick={handlePublish}
+        onClick={() => void handlePublish()}
         disabled={isPublishing}
         className="active-press hover-lift"
       >

@@ -1,4 +1,4 @@
-import { FieldType, FormField } from './field-types';
+import { FormField } from './field-types';
 import { FormTheme } from './theme';
 
 export type FormStatus = 'draft' | 'published' | 'closed' | 'archived';

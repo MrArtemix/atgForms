@@ -11,7 +11,7 @@ import {
 export default function AnalyticsPage() {
   const params = useParams();
   const formId = params.formId as string;
-  const { form, loading: formLoading } = useForm(formId);
+  const { loading: formLoading } = useForm(formId);
   const { analytics, loading: analyticsLoading } = useFormAnalytics(formId);
 
   if (formLoading || analyticsLoading) {

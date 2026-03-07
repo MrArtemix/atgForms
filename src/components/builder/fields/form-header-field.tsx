@@ -2,7 +2,7 @@
 
 import { FieldComponentProps } from "./field-registry";
 import { cn } from "@/lib/utils/cn";
-import { LayoutPanelTop, Image, Palette } from "lucide-react";
+import { LayoutPanelTop, Image as ImageIcon, Palette } from "lucide-react";
 
 const HEIGHT_CLASSES = {
   medium: "h-36 sm:h-48",
@@ -86,7 +86,7 @@ export function FormHeaderField({ field, mode }: FieldComponentProps) {
       <div className="flex items-center gap-4 px-3 py-2 text-[10px] text-[hsl(var(--muted-foreground))]">
         {hasImage ? (
           <span className="flex items-center gap-1">
-            <Image className="h-3 w-3" /> Image de fond
+            <ImageIcon className="h-3 w-3" /> Image de fond
           </span>
         ) : (
           <span className="flex items-center gap-1">

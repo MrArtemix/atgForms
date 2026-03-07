@@ -4,7 +4,6 @@ import { FieldComponentProps } from "./field-registry";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils/cn";
 
 export function MatrixField({ field, mode, value, onChange, error }: FieldComponentProps) {
   const rows = field.field_config.matrix_rows || [];

@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "@/lib/hooks/use-form";
 import { ResponseTable } from "@/components/responses/response-table";
-import { ResponseDetail } from "@/components/responses/response-detail";
 import { responseService } from "@/lib/services/response-service";
-import { FormResponse, ResponseWithAnswers } from "@/types/response";
+import { FormResponse } from "@/types/response";
 import { exportToCSV, exportToExcel, exportToPDF } from "@/lib/utils/export";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader, PageShell } from "@/components/layout/page-shell";
@@ -34,7 +33,7 @@ export default function ResponsesPage() {
   }, [formId, page]);
 
   useEffect(() => {
-    fetchResponses();
+    void fetchResponses();
   }, [fetchResponses]);
 
   const handleViewResponse = (responseId: string) => {
@@ -44,7 +43,7 @@ export default function ResponsesPage() {
   const handleDeleteResponse = async (responseId: string) => {
     if (!confirm("Are you sure you want to delete this response?")) return;
     await responseService.deleteResponse(responseId);
-    fetchResponses();
+    await fetchResponses();
   };
 
   const handleExport = async (format: "csv" | "excel" | "pdf") => {

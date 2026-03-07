@@ -60,10 +60,9 @@ export default function FormsPage() {
       setCreateDialogOpen(false);
       setNewFormTitle("");
       router.push(`/forms/${form.id}/edit`);
-    } catch (error: any) {
-      const msg = error?.message || error?.code || JSON.stringify(error);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : JSON.stringify(error);
       console.error("Failed to create form:", msg, error);
-      console.error("Failed to create form:", msg);
     } finally {
       setCreating(false);
     }
@@ -72,7 +71,7 @@ export default function FormsPage() {
   const handleDuplicate = async (formId: string) => {
     try {
       const newId = await formService.duplicateForm(formId);
-      refetch();
+      await refetch();
       router.push(`/forms/${newId}/edit`);
     } catch (error) {
       console.error("Failed to duplicate form:", error);
@@ -83,7 +82,7 @@ export default function FormsPage() {
     if (!confirm("Are you sure you want to delete this form?")) return;
     try {
       await formService.deleteForm(formId);
-      refetch();
+      await refetch();
     } catch (error) {
       console.error("Failed to delete form:", error);
     }
@@ -118,7 +117,7 @@ export default function FormsPage() {
                     placeholder="Customer satisfaction survey"
                     value={newFormTitle}
                     onChange={(e) => setNewFormTitle(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleCreateForm()}
+                    onKeyDown={(e) => { if (e.key === "Enter") void handleCreateForm(); }}
                     className="h-11 transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
                   />
                 </div>
@@ -131,7 +130,7 @@ export default function FormsPage() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleCreateForm}
+                  onClick={() => void handleCreateForm()}
                   disabled={creating}
                   className="active-press"
                 >
@@ -262,8 +261,8 @@ export default function FormsPage() {
 
 function FormListItem({
   form,
-  onDuplicate,
-  onDelete,
+  onDuplicate: _onDuplicate,
+  onDelete: _onDelete,
 }: {
   form: Form;
   onDuplicate?: (id: string) => void;

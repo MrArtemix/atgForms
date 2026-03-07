@@ -10,7 +10,7 @@ export const responseService = {
     answers: Record<string, FieldValue>
   ): Promise<string> {
     const supabase = createClient();
-    const processedAnswers: Record<string, any> = { ...answers };
+    const processedAnswers: Record<string, FieldValue> = { ...answers };
 
     // Handle file uploads before sending JSON
     for (const field of fields) {

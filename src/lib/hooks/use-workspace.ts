@@ -25,7 +25,7 @@ export function useWorkspaces(filialeId?: string) {
   }, [filialeId]);
 
   useEffect(() => {
-    fetchWorkspaces();
+    void fetchWorkspaces();
   }, [fetchWorkspaces]);
 
   return { workspaces, loading, refetch: fetchWorkspaces };
@@ -57,7 +57,7 @@ export function useWorkspace(workspaceId: string | null) {
       setLoading(false);
     }
 
-    fetch();
+    void fetch();
   }, [workspaceId]);
 
   return { workspace, members, loading };

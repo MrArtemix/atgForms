@@ -28,7 +28,7 @@ export function useRealtime<T extends Record<string, unknown>>(
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [table, filter, callback]);
 }

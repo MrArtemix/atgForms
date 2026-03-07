@@ -5,7 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useDroppable } from "@dnd-kit/core";
 import { CanvasFieldWrapper } from "./canvas-field-wrapper";
 import { cn } from "@/lib/utils/cn";
-import { Plus, MousePointerClick } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 
 export function BuilderCanvas() {
   const { fields, fieldOrder, currentPageId, pages } = useFormBuilderStore();

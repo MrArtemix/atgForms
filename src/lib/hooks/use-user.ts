@@ -31,7 +31,7 @@ export function useUser() {
       setLoading(false);
     }
 
-    getUser();
+    void getUser();
 
     const {
       data: { subscription },

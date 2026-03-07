@@ -14,6 +14,7 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
+import type { PieLabelRenderProps } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormAnalytics } from "@/types/response";
 
@@ -90,8 +91,8 @@ export function ChoiceDistribution({
                 outerRadius={80}
                 dataKey="count"
                 nameKey="value"
-                label={(props: any) =>
-                  `${props.name} (${((props.percent ?? 0) * 100).toFixed(0)}%)`
+                label={(props: PieLabelRenderProps) =>
+                  `${props.name} (${(((props.percent as number) ?? 0) * 100).toFixed(0)}%)`
                 }
               >
                 {data.map((_, index) => (

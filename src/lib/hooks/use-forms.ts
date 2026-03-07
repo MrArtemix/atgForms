@@ -25,7 +25,7 @@ export function useForms(workspaceId?: string) {
   }, [workspaceId]);
 
   useEffect(() => {
-    fetchForms();
+    void fetchForms();
   }, [fetchForms]);
 
   return { forms, loading, refetch: fetchForms };

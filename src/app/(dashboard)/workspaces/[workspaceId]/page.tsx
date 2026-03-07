@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { WorkspaceRole } from "@/types/workspace";
 import { Plus, FileText, Users, UserPlus } from "lucide-react";
 
 export default function WorkspaceDetailPage() {
@@ -52,18 +53,18 @@ export default function WorkspaceDetailPage() {
 
   const handleDuplicate = async (formId: string) => {
     await formService.duplicateForm(formId);
-    refetch();
+    await refetch();
   };
 
   const handleDelete = async (formId: string) => {
     if (!confirm("Are you sure you want to delete this form?")) return;
     await formService.deleteForm(formId);
-    refetch();
+    await refetch();
   };
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
-    await workspaceService.inviteMember(workspaceId, inviteEmail, inviteRole as any);
+    await workspaceService.inviteMember(workspaceId, inviteEmail, inviteRole as WorkspaceRole);
     setInviteEmail("");
     setInviteOpen(false);
   };
@@ -91,7 +92,7 @@ export default function WorkspaceDetailPage() {
             <p className="text-[hsl(var(--muted-foreground))] mt-1">{workspace.description}</p>
           )}
         </div>
-        <Button onClick={handleCreateForm} className="active-press hover-lift">
+        <Button onClick={() => void handleCreateForm()} className="active-press hover-lift">
           <Plus className="h-4 w-4 mr-1" />
           New Form
         </Button>
@@ -144,7 +145,7 @@ export default function WorkspaceDetailPage() {
                   <Button variant="outline" onClick={() => setInviteOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleInvite} className="active-press">Send Invite</Button>
+                  <Button onClick={() => void handleInvite()} className="active-press">Send Invite</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -198,7 +199,7 @@ export default function WorkspaceDetailPage() {
             title="No forms yet"
             description="Create your first form in this workspace."
             action={
-              <Button onClick={handleCreateForm} className="active-press">
+              <Button onClick={() => void handleCreateForm()} className="active-press">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Form
               </Button>

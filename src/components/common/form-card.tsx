@@ -90,13 +90,13 @@ export function FormCard({ form, onDuplicate, onDelete, onShare }: FormCardProps
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDuplicate?.(form.id)}>
+              <DropdownMenuItem onClick={() => void onDuplicate?.(form.id)}>
                 <Copy className="h-4 w-4 mr-2" />
                 Duplicate
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => onDelete?.(form.id)}
+                onClick={() => void onDelete?.(form.id)}
                 className="text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />

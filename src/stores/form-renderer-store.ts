@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { FormField } from "@/types/field-types";
 import { FormPage } from "@/types/form";
 
-export type FieldValue = string | number | boolean | string[] | Record<string, string> | File[] | null;
+export type FieldValue = string | number | boolean | string[] | Record<string, string | string[]> | File[] | (string | File)[] | null | undefined;
 
 interface FormRendererState {
   // Form data

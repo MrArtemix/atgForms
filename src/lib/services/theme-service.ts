@@ -62,7 +62,7 @@ export const themeService = {
 
     if (!systemTheme) throw new Error("Theme not found");
 
-    const { id, form_id, is_system, created_at, updated_at, ...themeProps } = systemTheme;
+    const { id: _id, form_id: _form_id, is_system: _is_system, created_at: _created_at, updated_at: _updated_at, ...themeProps } = systemTheme;
 
     return this.saveFormTheme(formId, { ...themeProps, is_system: false });
   },

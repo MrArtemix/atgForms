@@ -11,7 +11,6 @@ import {
   TrendingDown,
   Layout,
   BarChart3,
-  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -241,7 +240,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {recentForms.map((form, i) => (
+              {recentForms.map((form, _i) => (
                 <div
                   key={form.id}
                   className="flex items-center justify-between rounded-lg border border-[hsl(var(--border))] p-4 transition-colors hover:bg-[hsl(var(--muted))]/50"

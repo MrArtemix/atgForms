@@ -62,7 +62,7 @@ export function OAuthButton({ provider, label }: OAuthButtonProps) {
       type="button"
       variant="outline"
       className="w-full"
-      onClick={handleOAuth}
+      onClick={() => void handleOAuth()}
       disabled={isLoading}
     >
       {isLoading ? (

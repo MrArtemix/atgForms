@@ -37,7 +37,7 @@ export default function ThemePage() {
   };
 
   const handleSelectSystemTheme = (theme: FormTheme) => {
-    const { id, form_id, is_system, created_at, updated_at, ...themeProps } = theme;
+    const { id: _id, created_at: _created_at, form_id: _form_id, updated_at: _updated_at, is_system: _is_system, ...themeProps } = theme;
     setCurrentTheme(themeProps);
   };
 
@@ -54,7 +54,7 @@ export default function ThemePage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Theme</h2>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={() => void handleSave()} disabled={saving}>
           {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
           Save Theme
         </Button>
