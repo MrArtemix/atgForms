@@ -1,0 +1,15 @@
+ * Serving Flask app 'main'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [03/Mar/2026 16:03:51] "POST /generate-pdf HTTP/1.1" 200 -
+127.0.0.1 - - [03/Mar/2026 16:05:23] "OPTIONS /generate-pdf HTTP/1.1" 200 -
+127.0/usr/local/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-5x6ya8ht'}
+  warnings.warn(
+/usr/local/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-bswpi6t7'}
+  warnings.warn(
+5:34] "OPTIONS /generate-pdf HTTP/1.1" 200 -
+127.0.0.1 - - [04/Mar/2026 01:55:34] "POST /generate-pdf HTTP/1.1" 200 -
+127.0.0.1 - - [04/Mar/2026 14:50:45] "OPTIONS /generate-pdf HTTP/1.1" 200 -
+127.0.0.1 - - [04/Mar/2026 14:50:45] "POST /generate-pdf HTTP/1.1" 200 -
