@@ -16,13 +16,13 @@ async function getAuthenticatedClient() {
 }
 
 export const workspaceService = {
-  async createWorkspace(name: string, description?: string, filialeId?: string): Promise<Workspace> {
+  async createWorkspace(name: string, description?: string, filialeId?: string, logoUrl?: string): Promise<Workspace> {
     const res = await fetch("/api/workspaces/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, description, filialeId }),
+      body: JSON.stringify({ name, description, filialeId, logoUrl }),
     });
 
     if (!res.ok) {
@@ -115,6 +115,7 @@ export const workspaceService = {
     if (error) throw error;
   },
 
+  /** @deprecated Utiliser la sélection de projet via la hiérarchie filiale → projet */
   async ensurePersonalWorkspace(): Promise<Workspace> {
     // Use server-side API route to ensure proper auth context for RLS
     const res = await fetch("/api/workspaces/ensure", { method: "POST" });

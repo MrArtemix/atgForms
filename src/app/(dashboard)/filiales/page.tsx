@@ -19,12 +19,13 @@ import {
 } from "@/components/ui/dialog";
 import { Building2, Plus, Search } from "lucide-react";
 import { PageHeader, PageShell } from "@/components/layout/page-shell";
+import { LogoUploader } from "@/components/common/logo-uploader";
 import { cn } from "@/lib/utils/cn";
 
 const FILIALE_COLORS = [
     "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e",
     "#f97316", "#eab308", "#22c55e", "#14b8a6",
-    "#06b6d4", "#3b82f6",
+    "#06b6d4", "#3b82f6", "#ffffff",
 ];
 
 export default function FilialesPage() {
@@ -33,6 +34,8 @@ export default function FilialesPage() {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [selectedColor, setSelectedColor] = useState(FILIALE_COLORS[0]);
+    const [dotColor, setDotColor] = useState(FILIALE_COLORS[0]);
+    const [logoUrl, setLogoUrl] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -45,11 +48,14 @@ export default function FilialesPage() {
         if (!name.trim() || !holding) return;
         setCreating(true);
         try {
-            await filialeService.createFiliale(holding.id, name, description, selectedColor);
+            await filialeService.createFiliale(holding.id, name, description, selectedColor, logoUrl || undefined, dotColor);
             setDialogOpen(false);
             setName("");
             setDescription("");
             setSelectedColor(FILIALE_COLORS[0]);
+            setDotColor(FILIALE_COLORS[0]);
+            setLogoUrl(null);
+            window.dispatchEvent(new Event("filiales-updated"));
             await refetch();
         } catch (error: unknown) {
             console.error("Failed to create filiale:", error instanceof Error ? error.message : JSON.stringify(error, null, 2));
@@ -95,6 +101,15 @@ export default function FilialesPage() {
                             </DialogHeader>
                             <div className="space-y-4">
                                 <div className="space-y-2">
+                                    <Label>Logo (optionnel)</Label>
+                                    <LogoUploader
+                                        currentUrl={logoUrl}
+                                        onUpload={setLogoUrl}
+                                        onRemove={() => setLogoUrl(null)}
+                                        path="filiales"
+                                    />
+                                </div>
+                                <div className="space-y-2">
                                     <Label>Nom</Label>
                                     <Input
                                         value={name}
@@ -113,7 +128,7 @@ export default function FilialesPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Couleur</Label>
+                                    <Label>Couleur de fond</Label>
                                     <div className="flex gap-2 flex-wrap">
                                         {FILIALE_COLORS.map((color) => (
                                             <button
@@ -124,7 +139,27 @@ export default function FilialesPage() {
                                                     "w-8 h-8 rounded-lg transition-all duration-200",
                                                     selectedColor === color
                                                         ? "ring-2 ring-offset-2 ring-[hsl(var(--primary))] scale-110"
-                                                        : "hover:scale-105"
+                                                        : "hover:scale-105",
+                                                    color === "#ffffff" && "border border-[hsl(var(--border))]"
+                                                )}
+                                                style={{ backgroundColor: color }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Couleur de la puce (sidebar)</Label>
+                                    <div className="flex gap-2 flex-wrap items-center">
+                                        {FILIALE_COLORS.filter(c => c !== "#ffffff").map((color) => (
+                                            <button
+                                                key={color}
+                                                type="button"
+                                                onClick={() => setDotColor(color)}
+                                                className={cn(
+                                                    "w-5 h-5 rounded-full transition-all duration-200",
+                                                    dotColor === color
+                                                        ? "ring-2 ring-offset-2 ring-[hsl(var(--primary))] scale-125"
+                                                        : "hover:scale-110"
                                                 )}
                                                 style={{ backgroundColor: color }}
                                             />

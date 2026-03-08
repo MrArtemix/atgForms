@@ -20,7 +20,7 @@ export function ExportMenu({ onExport, disabled }: ExportMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" disabled={disabled}>
           <Download className="h-4 w-4 mr-1" />
-          Export
+          Exporter
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

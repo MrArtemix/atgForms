@@ -5,6 +5,55 @@ import { ResponseAnswer } from "@/types/response";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const formId = searchParams.get("form_id");
+
+    if (!formId) {
+      return NextResponse.json({ error: "form_id is required" }, { status: 400 });
+    }
+
+    if (!UUID_REGEX.test(formId)) {
+      return NextResponse.json({ error: "Invalid form_id" }, { status: 400 });
+    }
+
+    const page = parseInt(searchParams.get("page") || "0", 10);
+    const pageSize = Math.min(parseInt(searchParams.get("page_size") || "20", 10), 100);
+    const search = searchParams.get("search");
+
+    let query = supabase
+      .from("form_responses")
+      .select("*", { count: "exact" })
+      .eq("form_id", formId)
+      .order("created_at", { ascending: false })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (search) {
+      query = query.or(`respondent_email.ilike.%${search}%,respondent_name.ilike.%${search}%`);
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error("Error fetching responses:", error);
+      return NextResponse.json({ error: "Failed to fetch responses" }, { status: 500 });
+    }
+
+    return NextResponse.json({ data, count });
+  } catch (error: unknown) {
+    console.error("GET /api/responses error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

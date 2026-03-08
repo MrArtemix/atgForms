@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useFormBuilderStore } from "@/stores/form-builder-store";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable, useDndMonitor } from "@dnd-kit/core";
 import { CanvasFieldWrapper } from "./canvas-field-wrapper";
 import { cn } from "@/lib/utils/cn";
 import { MousePointerClick } from "lucide-react";
@@ -11,6 +12,26 @@ export function BuilderCanvas() {
   const { fields, fieldOrder, currentPageId, pages } = useFormBuilderStore();
   const currentPage = pages.find((p) => p.id === currentPageId);
   const currentFieldIds = currentPageId ? fieldOrder[currentPageId] || [] : [];
+
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
+  useDndMonitor({
+    onDragStart(event) {
+      setActiveId(event.active.id as string);
+    },
+    onDragOver(event) {
+      setOverId(event.over ? (event.over.id as string) : null);
+    },
+    onDragEnd() {
+      setActiveId(null);
+      setOverId(null);
+    },
+    onDragCancel() {
+      setActiveId(null);
+      setOverId(null);
+    },
+  });
 
   const { setNodeRef, isOver } = useDroppable({
     id: "canvas-drop-zone",
@@ -27,7 +48,7 @@ export function BuilderCanvas() {
         <h2 className="text-lg font-semibold">{currentPage.title}</h2>
         {currentPage.description && <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">{currentPage.description}</p>}
       </div>
-      
+
       <div
         ref={setNodeRef}
         className={cn(
@@ -39,8 +60,18 @@ export function BuilderCanvas() {
           {currentFieldIds.map((fieldId, i) => {
             const field = fields[fieldId];
             if (!field) return null;
+
+            const showInsertIndicator = activeId && overId === fieldId && activeId !== fieldId;
+
             return (
               <div key={fieldId} className={`animate-fade-in-up animate-stagger-${Math.min(i + 1, 6)}`}>
+                {showInsertIndicator && (
+                  <div className="flex items-center mx-2 my-1 animate-fade-in">
+                    <div className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />
+                    <div className="flex-1 h-0.5 bg-[hsl(var(--primary))]" />
+                    <div className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />
+                  </div>
+                )}
                 <CanvasFieldWrapper field={field} />
               </div>
             );

@@ -14,11 +14,11 @@ function getStrength(password: string): { score: number; label: string } {
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
 
-  if (score <= 1) return { score: 1, label: "Weak" };
-  if (score <= 2) return { score: 2, label: "Fair" };
-  if (score <= 3) return { score: 3, label: "Good" };
-  if (score <= 4) return { score: 4, label: "Strong" };
-  return { score: 5, label: "Very Strong" };
+  if (score <= 1) return { score: 1, label: "Faible" };
+  if (score <= 2) return { score: 2, label: "Moyen" };
+  if (score <= 3) return { score: 3, label: "Bon" };
+  if (score <= 4) return { score: 4, label: "Fort" };
+  return { score: 5, label: "Très fort" };
 }
 
 const barColors = [

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { MobileBottomBar } from "@/components/layout/mobile-bottom-bar";
 
 export default async function DashboardLayout({
   children,
@@ -29,10 +30,11 @@ export default async function DashboardLayout({
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header user={userData} />
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-10 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto p-6 pb-24 md:p-8 md:pb-8 lg:p-10 lg:pb-10 custom-scrollbar">
           {children}
         </main>
       </div>
+      <MobileBottomBar />
     </div>
   );
 }

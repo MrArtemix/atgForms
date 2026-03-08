@@ -86,7 +86,7 @@ export function ConditionalLogicEditor({ fieldId }: ConditionalLogicEditorProps)
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Zap className="h-4 w-4 text-amber-500" />
-          <Label className="text-xs font-medium">Conditional Logic</Label>
+          <Label className="text-xs font-medium">Logique conditionnelle</Label>
         </div>
         <Switch checked={hasLogic} onCheckedChange={(v) => (v ? enableLogic() : disableLogic())} />
       </div>
@@ -103,12 +103,12 @@ export function ConditionalLogicEditor({ fieldId }: ConditionalLogicEditorProps)
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="show">Show</SelectItem>
-                <SelectItem value="hide">Hide</SelectItem>
-                <SelectItem value="require">Require</SelectItem>
+                <SelectItem value="show">Afficher</SelectItem>
+                <SelectItem value="hide">Masquer</SelectItem>
+                <SelectItem value="require">Exiger</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-muted-foreground">this field when</span>
+            <span className="text-muted-foreground">ce champ si</span>
             <Select
               value={logic.logic}
               onValueChange={(v) => updateLogic({ logic: v as ConditionalLogicType })}
@@ -117,8 +117,8 @@ export function ConditionalLogicEditor({ fieldId }: ConditionalLogicEditorProps)
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="and">ALL</SelectItem>
-                <SelectItem value="or">ANY</SelectItem>
+                <SelectItem value="and">TOUTES</SelectItem>
+                <SelectItem value="or">UNE</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -139,7 +139,7 @@ export function ConditionalLogicEditor({ fieldId }: ConditionalLogicEditorProps)
                     onValueChange={(v) => updateCondition(condition.id, { field_id: v })}
                   >
                     <SelectTrigger className="h-7 text-xs flex-1">
-                      <SelectValue placeholder="Select field" />
+                      <SelectValue placeholder="Sélectionner un champ" />
                     </SelectTrigger>
                     <SelectContent>
                       {otherFields.map((f) => (
@@ -179,7 +179,7 @@ export function ConditionalLogicEditor({ fieldId }: ConditionalLogicEditorProps)
                   <Input
                     value={String(condition.value || "")}
                     onChange={(e) => updateCondition(condition.id, { value: e.target.value })}
-                    placeholder="Value"
+                    placeholder="Valeur"
                     className="h-7 text-xs"
                   />
                 )}
@@ -189,7 +189,7 @@ export function ConditionalLogicEditor({ fieldId }: ConditionalLogicEditorProps)
 
           <Button variant="outline" size="sm" onClick={addCondition} className="w-full text-xs">
             <Plus className="h-3 w-3 mr-1" />
-            Add Condition
+            Ajouter une condition
           </Button>
         </div>
       )}

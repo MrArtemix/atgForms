@@ -20,7 +20,7 @@ export function DateField({ field, mode, value, onChange, error }: FieldComponen
         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="date"
-          placeholder={field.placeholder || "Select a date"}
+          placeholder={field.placeholder || "Sélectionner une date"}
           disabled={mode === "builder"}
           value={mode === "renderer" ? (value as string) || "" : ""}
           onChange={(e) => onChange?.(e.target.value)}

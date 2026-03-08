@@ -19,10 +19,14 @@ export function FilialeCard({ filiale, projetCount = 0, memberCount = 0 }: Filia
                 <CardHeader className="pb-2">
                     <div className="flex items-center gap-3">
                         <div
-                            className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm"
+                            className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm overflow-hidden"
                             style={{ backgroundColor: filiale.color || "#6366f1" }}
                         >
-                            {filiale.name.charAt(0).toUpperCase()}
+                            {filiale.logo_url ? (
+                                <img src={filiale.logo_url} alt={filiale.name} className="w-full h-full object-cover" />
+                            ) : (
+                                filiale.name.charAt(0).toUpperCase()
+                            )}
                         </div>
                         <div className="min-w-0 flex-1">
                             <CardTitle className="text-base truncate">{filiale.name}</CardTitle>

@@ -9,10 +9,10 @@ export function validateField(field: FormField, value: FieldValue): string | nul
   // Required check
   if (field.required) {
     if (value === null || value === undefined || value === "") {
-      return "This field is required";
+      return "Ce champ est obligatoire";
     }
     if (Array.isArray(value) && value.length === 0) {
-      return "Please select at least one option";
+      return "Veuillez sélectionner au moins une option";
     }
   }
 
@@ -49,15 +49,15 @@ export function validateField(field: FormField, value: FieldValue): string | nul
 
 function validateText(value: string, rules: ValidationRules): string | null {
   if (rules.min_length && value.length < rules.min_length) {
-    return `Minimum ${rules.min_length} characters required`;
+    return `Minimum ${rules.min_length} caractères requis`;
   }
   if (rules.max_length && value.length > rules.max_length) {
-    return `Maximum ${rules.max_length} characters allowed`;
+    return `Maximum ${rules.max_length} caractères autorisés`;
   }
   if (rules.pattern) {
     const regex = new RegExp(rules.pattern);
     if (!regex.test(value)) {
-      return rules.pattern_message || "Invalid format";
+      return rules.pattern_message || "Format invalide";
     }
   }
   return null;
@@ -66,7 +66,7 @@ function validateText(value: string, rules: ValidationRules): string | null {
 function validateEmail(value: string): string | null {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(value)) {
-    return "Please enter a valid email address";
+    return "Veuillez entrer une adresse email valide";
   }
   return null;
 }
@@ -76,25 +76,25 @@ function validateUrl(value: string): string | null {
     new URL(value);
     return null;
   } catch {
-    return "Please enter a valid URL";
+    return "Veuillez entrer une URL valide";
   }
 }
 
 function validatePhone(value: string): string | null {
   const phoneRegex = /^[+]?[\d\s\-().]{7,20}$/;
   if (!phoneRegex.test(value)) {
-    return "Please enter a valid phone number";
+    return "Veuillez entrer un numéro de téléphone valide";
   }
   return null;
 }
 
 function validateNumber(value: number, rules: ValidationRules): string | null {
-  if (isNaN(value)) return "Please enter a valid number";
+  if (isNaN(value)) return "Veuillez entrer un nombre valide";
   if (rules.min_value !== undefined && value < rules.min_value) {
-    return `Minimum value is ${rules.min_value}`;
+    return `La valeur minimale est ${rules.min_value}`;
   }
   if (rules.max_value !== undefined && value > rules.max_value) {
-    return `Maximum value is ${rules.max_value}`;
+    return `La valeur maximale est ${rules.max_value}`;
   }
   return null;
 }

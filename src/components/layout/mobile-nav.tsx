@@ -10,21 +10,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  FileText,
-  LayoutDashboard,
-  Layout,
+  Gauge,
+  LayoutGrid,
   Building2,
-  User,
-  Plus,
+  CircleUser,
+  LifeBuoy,
   X,
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/dashboard", icon: Gauge },
   { label: "Filiales", href: "/filiales", icon: Building2 },
-  { label: "Formulaires", href: "/forms", icon: FileText },
-  { label: "Templates", href: "/templates", icon: Layout },
-  { label: "Profil", href: "/profile", icon: User },
+  { label: "Templates", href: "/templates", icon: LayoutGrid },
+  { label: "Profil", href: "/profile", icon: CircleUser },
+  { label: "Aide", href: "/help", icon: LifeBuoy },
 ];
 
 interface MobileNavProps {
@@ -47,10 +46,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
             className="flex items-center gap-2.5"
             onClick={() => onOpenChange(false)}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(var(--primary))]">
-              <FileText className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-lg font-bold">ATGForm</span>
+            <img src="/logo_atg.jpeg" alt="ATG" className="h-9 max-w-[140px] object-contain" />
           </Link>
           <button
             onClick={() => onOpenChange(false)}
@@ -87,12 +83,12 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
           })}
         </nav>
 
-        {/* New Form Button */}
+        {/* Explore Filiales Button */}
         <div className="mt-auto border-t border-[hsl(var(--border))] pt-4">
           <Button asChild className="w-full" onClick={() => onOpenChange(false)}>
-            <Link href="/forms">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau formulaire
+            <Link href="/filiales">
+              <Building2 className="mr-2 h-4 w-4" />
+              Explorer les filiales
             </Link>
           </Button>
         </div>

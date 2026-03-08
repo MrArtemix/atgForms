@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, Bell, Plus, Settings, HelpCircle, ImagePlus, X } from "lucide-react";
+import { LogOut, CircleUser, Building2, SlidersHorizontal, LifeBuoy, X, Menu } from "lucide-react";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { CommandPalette } from "@/components/layout/command-palette";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { NotificationPopover } from "@/components/notifications/notification-popover";
+import { useNotifications } from "@/lib/hooks/use-notifications";
 import { cn } from "@/lib/utils/cn";
 
 interface HeaderProps {
@@ -30,35 +33,15 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const router = useRouter();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [notificationCount] = useState(3);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize realtime notifications
+  useNotifications(user.id);
 
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
-  };
-
-  const handleLogoClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setLogoUrl(url);
-    }
-  };
-
-  const handleLogoRemove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setLogoUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   };
 
   const initials = user.fullName
@@ -71,130 +54,52 @@ export function Header({ user }: HeaderProps) {
   return (
     <>
       <header className="flex h-16 items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/80 backdrop-blur-lg px-4 md:px-6">
-        {/* Left side: Logo, Search & Quick Actions */}
+        {/* Left side: Hamburger, Logo, Breadcrumbs, Search & Quick Actions */}
         <div className="flex items-center gap-3">
-          {/* Logo Upload Zone */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleLogoChange}
-          />
-          <button
-            onClick={handleLogoClick}
-            title="Cliquez pour ajouter un logo"
-            className={cn(
-              "relative group flex items-center justify-center rounded-lg transition-all duration-200 overflow-hidden shrink-0",
-              logoUrl
-                ? "h-10 w-10 ring-1 ring-[hsl(var(--border))]"
-                : "h-10 w-auto px-3 gap-2 border-2 border-dashed border-[hsl(var(--border))] hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/5"
-            )}
+          {/* Mobile hamburger */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden h-9 w-9"
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            aria-label={mobileNavOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
-            {logoUrl ? (
-              <>
-                <img
-                  src={logoUrl}
-                  alt="Logo"
-                  className="h-full w-full object-contain rounded-lg"
-                />
-                {/* Overlay on hover to change/remove */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                  <ImagePlus className="h-4 w-4 text-white" />
-                </div>
-                {/* Remove button */}
-                <button
-                  onClick={handleLogoRemove}
-                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[hsl(var(--destructive))] text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </>
-            ) : (
-              <>
-                <ImagePlus className="h-4 w-4 text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--primary))] transition-colors" />
-                <span className="text-xs text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--primary))] transition-colors hidden sm:inline">
-                  Logo
-                </span>
-              </>
-            )}
-          </button>
+            <div className="relative h-5 w-5">
+              <Menu
+                className={cn(
+                  "h-5 w-5 absolute transition-all duration-300",
+                  mobileNavOpen ? "opacity-0 rotate-90" : "opacity-100 rotate-0"
+                )}
+              />
+              <X
+                className={cn(
+                  "h-5 w-5 absolute transition-all duration-300",
+                  mobileNavOpen ? "opacity-100 rotate-0" : "opacity-0 -rotate-90"
+                )}
+              />
+            </div>
+          </Button>
 
           <CommandPalette user={user} />
+
+          {/* Breadcrumbs - desktop only */}
+          <Breadcrumbs className="hidden lg:flex" />
 
           {/* Quick Create Button */}
           <Button
             size="sm"
             className="hidden sm:flex gap-2"
-            onClick={() => router.push("/forms")}
+            onClick={() => router.push("/filiales")}
           >
-            <Plus className="h-4 w-4" />
-            <span className="hidden lg:inline">Nouveau</span>
+            <Building2 className="h-4 w-4" />
+            <span className="hidden lg:inline">Filiales</span>
           </Button>
         </div>
 
         {/* Right side: Notifications & User dropdown */}
         <div className="ml-auto flex items-center gap-2">
           {/* Notifications */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {notificationCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[hsl(var(--destructive))] text-[10px] font-medium text-white">
-                    {notificationCount}
-                  </span>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel className="flex items-center justify-between">
-                <span>Notifications</span>
-                {notificationCount > 0 && (
-                  <span className="text-xs text-[hsl(var(--muted-foreground))]">
-                    {notificationCount} nouvelles
-                  </span>
-                )}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="max-h-64 overflow-y-auto">
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
-                  <div className="flex items-center gap-2 w-full">
-                    <div className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />
-                    <span className="text-sm font-medium">New response</span>
-                    <span className="ml-auto text-xs text-[hsl(var(--muted-foreground))]">2 min</span>
-                  </div>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] pl-4">
-                    Une réponse reçue sur &quot;Formulaire contact&quot;
-                  </p>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
-                  <div className="flex items-center gap-2 w-full">
-                    <div className="h-2 w-2 rounded-full bg-[hsl(var(--primary))]" />
-                    <span className="text-sm font-medium">Formulaire publié</span>
-                    <span className="ml-auto text-xs text-[hsl(var(--muted-foreground))]">1 h</span>
-                  </div>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] pl-4">
-                    &quot;Inscription événement&quot; est en ligne
-                  </p>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
-                  <div className="flex items-center gap-2 w-full">
-                    <div className="h-2 w-2 rounded-full bg-[hsl(var(--muted-foreground))]" />
-                    <span className="text-sm font-medium">Bienvenue</span>
-                    <span className="ml-auto text-xs text-[hsl(var(--muted-foreground))]">1 j</span>
-                  </div>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] pl-4">
-                    Thanks for joining ATGForm
-                  </p>
-                </DropdownMenuItem>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer justify-center text-[hsl(var(--primary))]">
-                Voir toutes les notifications
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <NotificationPopover />
 
           {/* User Dropdown */}
           <DropdownMenu>
@@ -223,18 +128,21 @@ export function Header({ user }: HeaderProps) {
                 className="cursor-pointer"
                 onClick={() => router.push("/profile")}
               >
-                <User className="mr-2 h-4 w-4" />
+                <CircleUser className="mr-2 h-4 w-4" />
                 Profil
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => router.push("/profile")}
               >
-                <Settings className="mr-2 h-4 w-4" />
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Paramètres
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <HelpCircle className="mr-2 h-4 w-4" />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push("/help")}
+              >
+                <LifeBuoy className="mr-2 h-4 w-4" />
                 Aide
               </DropdownMenuItem>
               <DropdownMenuSeparator />

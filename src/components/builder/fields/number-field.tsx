@@ -17,7 +17,7 @@ export function NumberField({ field, mode, value, onChange, error }: FieldCompon
       )}
       <Input
         type="number"
-        placeholder={field.placeholder || "Enter a number..."}
+        placeholder={field.placeholder || "Entrer un nombre..."}
         disabled={mode === "builder"}
         value={mode === "renderer" ? (value as string) ?? "" : ""}
         onChange={(e) => onChange?.(e.target.value === "" ? "" : Number(e.target.value))}

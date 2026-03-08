@@ -4,6 +4,46 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/utils/slugify";
 import { FilialeRole } from "@/types/filiale";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function GET(request: NextRequest) {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const holdingId = searchParams.get("holding_id");
+
+        let query = supabase
+            .from("filiales")
+            .select("*", { count: "exact" })
+            .order("created_at", { ascending: false });
+
+        if (holdingId) {
+            if (!UUID_REGEX.test(holdingId)) {
+                return NextResponse.json({ error: "Invalid holding_id" }, { status: 400 });
+            }
+            query = query.eq("holding_id", holdingId);
+        }
+
+        const { data, error, count } = await query;
+
+        if (error) {
+            console.error("Error fetching filiales:", error);
+            return NextResponse.json({ error: "Failed to fetch filiales" }, { status: 500 });
+        }
+
+        return NextResponse.json({ data, count });
+    } catch (error: unknown) {
+        console.error("GET /api/filiales error:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
 export async function POST(req: NextRequest) {
     try {
         const supabase = await createClient();
@@ -14,7 +54,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { holdingId, name, description, color } = body;
+        const { holdingId, name, description, color, logoUrl, dotColor } = body;
 
         if (!holdingId || !name) {
             return new NextResponse("Missing required fields", { status: 400 });
@@ -39,7 +79,7 @@ export async function POST(req: NextRequest) {
         // Create the filiale
         const { data: filiale, error: createError } = await adminAuthClient
             .from("filiales")
-            .insert({ holding_id: holdingId, name, slug, description, color: color || "#6366f1" })
+            .insert({ holding_id: holdingId, name, slug, description, color: color || "#6366f1", logo_url: logoUrl || null, dot_color: dotColor || color || "#6366f1" })
             .select()
             .single();
 

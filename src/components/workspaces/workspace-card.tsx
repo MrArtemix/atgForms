@@ -10,16 +10,21 @@ interface WorkspaceCardProps {
   workspace: Workspace;
   memberCount?: number;
   formCount?: number;
+  href?: string;
 }
 
-export function WorkspaceCard({ workspace, memberCount = 0, formCount = 0 }: WorkspaceCardProps) {
+export function WorkspaceCard({ workspace, memberCount = 0, formCount = 0, href }: WorkspaceCardProps) {
   return (
-    <Link href={`/workspaces/${workspace.id}`}>
+    <Link href={href || `/workspaces/${workspace.id}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-primary" />
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center overflow-hidden">
+              {workspace.logo_url ? (
+                <img src={workspace.logo_url} alt={workspace.name} className="w-full h-full object-cover" />
+              ) : (
+                <Building2 className="h-5 w-5 text-primary" />
+              )}
             </div>
             <div>
               <CardTitle className="text-base">{workspace.name}</CardTitle>

@@ -5,22 +5,27 @@ import { useHistoryStore } from "@/stores/history-store";
 import { useBuilderSave } from "@/components/builder/builder-save-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Undo2, Redo2, Eye, Send, Loader2, Cloud, CloudOff, Link as LinkIcon, Check, BarChart3, Settings, Save } from "lucide-react";
+import { Undo2, Redo2, Eye, Send, Loader2, Cloud, CloudOff, Link as LinkIcon, Check, TrendingUp, SlidersHorizontal, Save } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { Badge } from "@/components/ui/badge";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { formService } from "@/lib/services/form-service";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import Link from "next/link";
 
 export function BuilderToolbar() {
-  const { title, setTitle, isDirty, isSaving, lastSavedAt, formId, status, setStatus } = useFormBuilderStore();
+  const { title, setTitle, isDirty, isSaving, lastSavedAt, formId, status, setStatus, fieldOrder } = useFormBuilderStore();
   const { canUndo, canRedo, undo, redo } = useHistoryStore();
   const saveNow = useBuilderSave();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const totalFields = useMemo(() => {
+    return Object.values(fieldOrder).reduce((sum, ids) => sum + ids.length, 0);
+  }, [fieldOrder]);
 
   const handleSave = useCallback(async () => {
     if (saveNow && !isSaving) {
@@ -154,6 +159,9 @@ export function BuilderToolbar() {
             {status === "published" ? "Publié" : status === "draft" ? "Brouillon" : "Fermé"}
           </span>
         )}
+        <Badge variant="secondary" className="hidden sm:inline-flex text-xs">
+          {totalFields} champ{totalFields !== 1 ? "s" : ""}
+        </Badge>
       </div>
 
       {/* Save Status */}
@@ -243,13 +251,13 @@ export function BuilderToolbar() {
         <>
           <Button variant="outline" size="sm" asChild className="hover-lift">
             <Link href={`/forms/${formId}/responses`}>
-              <BarChart3 className="h-4 w-4 mr-1" />
+              <TrendingUp className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Réponses</span>
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild className="hover-lift">
             <Link href={`/forms/${formId}/settings`}>
-              <Settings className="h-4 w-4 mr-1" />
+              <SlidersHorizontal className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Paramètres</span>
             </Link>
           </Button>

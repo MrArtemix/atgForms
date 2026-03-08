@@ -27,7 +27,7 @@ export function DropdownField({ field, mode, value, onChange, error }: FieldComp
         disabled={mode === "builder"}
       >
         <SelectTrigger className={cn(error && "border-destructive")}>
-          <SelectValue placeholder={field.placeholder || "Select an option..."} />
+          <SelectValue placeholder={field.placeholder || "Sélectionner une option..."} />
         </SelectTrigger>
         <SelectContent>
           {(field.options || []).map((option) => (

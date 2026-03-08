@@ -36,6 +36,7 @@ export function useFiliales(holdingId: string | null) {
 export function useFiliale(filialeId: string | null) {
     const [filiale, setFiliale] = useState<FilialeWithProjets | null>(null);
     const [members, setMembers] = useState<FilialeMember[]>([]);
+    const [formCounts, setFormCounts] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
 
     const fetchFiliale = useCallback(async () => {
@@ -58,15 +59,35 @@ export function useFiliale(filialeId: string | null) {
                 .eq("filiale_id", filialeId),
         ]);
 
+        const projets = (projetsResult.data || []) as Workspace[];
+
         if (filialeResult.data) {
             setFiliale({
                 ...filialeResult.data,
-                projets: (projetsResult.data || []) as Workspace[],
+                projets,
                 member_count: membersResult.data?.length || 0,
             });
         }
 
         setMembers(membersResult.data || []);
+
+        // Fetch form counts per project
+        if (projets.length > 0) {
+            const projetIds = projets.map((p) => p.id);
+            const { data: formRows } = await supabase
+                .from("forms")
+                .select("workspace_id")
+                .in("workspace_id", projetIds);
+
+            const counts: Record<string, number> = {};
+            if (formRows) {
+                for (const row of formRows) {
+                    counts[row.workspace_id] = (counts[row.workspace_id] || 0) + 1;
+                }
+            }
+            setFormCounts(counts);
+        }
+
         setLoading(false);
     }, [filialeId]);
 
@@ -74,5 +95,5 @@ export function useFiliale(filialeId: string | null) {
         void fetchFiliale();
     }, [fetchFiliale]);
 
-    return { filiale, members, loading, refetch: fetchFiliale };
+    return { filiale, members, formCounts, loading, refetch: fetchFiliale };
 }

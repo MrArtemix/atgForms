@@ -34,7 +34,7 @@ export function CanvasFieldWrapper({ field }: CanvasFieldWrapperProps) {
         isSelected
           ? "ring-2 ring-[hsl(var(--primary))] border-[hsl(var(--primary))] shadow-md shadow-[hsl(var(--primary))]/10"
           : "hover:border-[hsl(var(--primary))]/30 hover:shadow-sm",
-        isDragging && "opacity-50 shadow-lg scale-[1.02]"
+        isDragging && "opacity-30 scale-[0.98] border-dashed border-[hsl(var(--primary))]/30"
       )}
       onClick={(e) => { e.stopPropagation(); selectField(field.id); }}
     >

@@ -17,8 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X, Plus, GripVertical, Trash2 } from "lucide-react";
 import { FieldOption } from "@/types/field-types";
+import { ConditionalLogicEditor } from "./conditional-logic-editor";
 
 export function PropertiesPanel() {
   const {
@@ -38,7 +40,7 @@ export function PropertiesPanel() {
   if (!field) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-4 text-center text-[hsl(var(--muted-foreground))] text-sm animate-fade-in">
-        <p>Select a field to edit its properties</p>
+        <p>Sélectionnez un champ pour modifier ses propriétés</p>
       </div>
     );
   }
@@ -49,7 +51,7 @@ export function PropertiesPanel() {
     <ScrollArea className="h-full custom-scrollbar">
       <div className="p-4 animate-slide-in-right">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-sm">Field Properties</h3>
+          <h3 className="font-semibold text-sm">Propriétés du champ</h3>
           <Button
             variant="ghost"
             size="icon"
@@ -67,7 +69,7 @@ export function PropertiesPanel() {
         <Tabs defaultValue="general" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="general" className="text-xs">
-              General
+              Général
             </TabsTrigger>
             <TabsTrigger value="validation" className="text-xs">
               Validation
@@ -86,11 +88,11 @@ export function PropertiesPanel() {
           {/* General Tab */}
           <TabsContent value="general" className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs">Label</Label>
+              <Label className="text-xs">Libellé</Label>
               <Input
                 value={field.label}
                 onChange={(e) => updateFieldLabel(field.id, e.target.value)}
-                placeholder="Field label"
+                placeholder="Libellé du champ"
                 className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
               />
             </div>
@@ -104,14 +106,14 @@ export function PropertiesPanel() {
                     description: e.target.value || null,
                   })
                 }
-                placeholder="Optional description"
+                placeholder="Description facultative"
                 rows={2}
                 className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs">Placeholder</Label>
+              <Label className="text-xs">Texte indicatif</Label>
               <Input
                 value={field.placeholder || ""}
                 onChange={(e) =>
@@ -119,7 +121,7 @@ export function PropertiesPanel() {
                     placeholder: e.target.value || null,
                   })
                 }
-                placeholder="Placeholder text"
+                placeholder="Texte indicatif"
                 className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
               />
             </div>
@@ -127,7 +129,7 @@ export function PropertiesPanel() {
             <Separator />
 
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Required</Label>
+              <Label className="text-xs">Obligatoire</Label>
               <Switch
                 checked={field.required}
                 onCheckedChange={(checked) =>
@@ -135,6 +137,10 @@ export function PropertiesPanel() {
                 }
               />
             </div>
+
+            <Separator />
+
+            <ConditionalLogicEditor fieldId={field.id} />
           </TabsContent>
 
           {/* Validation Tab */}
@@ -142,7 +148,7 @@ export function PropertiesPanel() {
             {(field.type === "short_text" || field.type === "long_text") && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-xs">Min Length</Label>
+                  <Label className="text-xs">Longueur min.</Label>
                   <Input
                     type="number"
                     value={field.validation_rules.min_length || ""}
@@ -153,11 +159,11 @@ export function PropertiesPanel() {
                           : undefined,
                       })
                     }
-                    placeholder="No minimum"
+                    placeholder="Pas de minimum"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Max Length</Label>
+                  <Label className="text-xs">Longueur max.</Label>
                   <Input
                     type="number"
                     value={field.validation_rules.max_length || ""}
@@ -168,11 +174,11 @@ export function PropertiesPanel() {
                           : undefined,
                       })
                     }
-                    placeholder="No maximum"
+                    placeholder="Pas de maximum"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Pattern (Regex)</Label>
+                  <Label className="text-xs">Modèle (Regex)</Label>
                   <Input
                     value={field.validation_rules.pattern || ""}
                     onChange={(e) =>
@@ -184,7 +190,7 @@ export function PropertiesPanel() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Pattern Error Message</Label>
+                  <Label className="text-xs">Message d'erreur du modèle</Label>
                   <Input
                     value={field.validation_rules.pattern_message || ""}
                     onChange={(e) =>
@@ -192,7 +198,7 @@ export function PropertiesPanel() {
                         pattern_message: e.target.value || undefined,
                       })
                     }
-                    placeholder="Invalid format"
+                    placeholder="Format invalide"
                   />
                 </div>
               </>
@@ -201,7 +207,7 @@ export function PropertiesPanel() {
             {field.type === "number" && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-xs">Min Value</Label>
+                  <Label className="text-xs">Valeur min.</Label>
                   <Input
                     type="number"
                     value={field.validation_rules.min_value ?? ""}
@@ -215,7 +221,7 @@ export function PropertiesPanel() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Max Value</Label>
+                  <Label className="text-xs">Valeur max.</Label>
                   <Input
                     type="number"
                     value={field.validation_rules.max_value ?? ""}
@@ -233,7 +239,7 @@ export function PropertiesPanel() {
 
             {!config.hasValidation && field.type !== "number" && (
               <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                No validation options for this field type.
+                Aucune option de validation pour ce type de champ.
               </p>
             )}
           </TabsContent>
@@ -280,7 +286,7 @@ export function PropertiesPanel() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">Min Label</Label>
+                    <Label className="text-xs">Libellé min.</Label>
                     <Input
                       value={field.field_config.scale_min_label || ""}
                       onChange={(e) =>
@@ -288,11 +294,11 @@ export function PropertiesPanel() {
                           scale_min_label: e.target.value,
                         })
                       }
-                      placeholder="e.g. Not at all"
+                      placeholder="ex. Pas du tout"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">Max Label</Label>
+                    <Label className="text-xs">Libellé max.</Label>
                     <Input
                       value={field.field_config.scale_max_label || ""}
                       onChange={(e) =>
@@ -300,7 +306,7 @@ export function PropertiesPanel() {
                           scale_max_label: e.target.value,
                         })
                       }
-                      placeholder="e.g. Very much"
+                      placeholder="ex. Tout à fait"
                     />
                   </div>
                 </>
@@ -309,7 +315,7 @@ export function PropertiesPanel() {
               {field.type === "rating" && (
                 <>
                   <div className="space-y-2">
-                    <Label className="text-xs">Max Rating</Label>
+                    <Label className="text-xs">Note maximale</Label>
                     <Select
                       value={String(field.field_config.rating_max || 5)}
                       onValueChange={(v) =>
@@ -329,7 +335,7 @@ export function PropertiesPanel() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">Icon</Label>
+                    <Label className="text-xs">Icône</Label>
                     <Select
                       value={field.field_config.rating_icon || "star"}
                       onValueChange={(v) =>
@@ -342,9 +348,9 @@ export function PropertiesPanel() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="star">Star</SelectItem>
-                        <SelectItem value="heart">Heart</SelectItem>
-                        <SelectItem value="thumbsup">Thumbs Up</SelectItem>
+                        <SelectItem value="star">Étoile</SelectItem>
+                        <SelectItem value="heart">Cœur</SelectItem>
+                        <SelectItem value="thumbsup">Pouce levé</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -353,7 +359,7 @@ export function PropertiesPanel() {
 
               {field.type === "long_text" && (
                 <div className="space-y-2">
-                  <Label className="text-xs">Rows</Label>
+                  <Label className="text-xs">Lignes</Label>
                   <Input
                     type="number"
                     min={2}
@@ -370,7 +376,7 @@ export function PropertiesPanel() {
 
               {field.type === "number" && (
                 <div className="space-y-2">
-                  <Label className="text-xs">Step</Label>
+                  <Label className="text-xs">Pas</Label>
                   <Input
                     type="number"
                     value={field.field_config.step || 1}
@@ -385,7 +391,7 @@ export function PropertiesPanel() {
 
               {field.type === "section_header" && (
                 <div className="space-y-2">
-                  <Label className="text-xs">Heading Size</Label>
+                  <Label className="text-xs">Taille du titre</Label>
                   <Select
                     value={field.field_config.header_size || "h2"}
                     onValueChange={(v) =>
@@ -398,9 +404,9 @@ export function PropertiesPanel() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="h2">Large (H2)</SelectItem>
-                      <SelectItem value="h3">Medium (H3)</SelectItem>
-                      <SelectItem value="h4">Small (H4)</SelectItem>
+                      <SelectItem value="h2">Grand (H2)</SelectItem>
+                      <SelectItem value="h3">Moyen (H3)</SelectItem>
+                      <SelectItem value="h4">Petit (H4)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -545,19 +551,46 @@ export function PropertiesPanel() {
                 </>
               )}
 
-              {[
-                "date",
-                "time",
-                "email",
-                "phone",
-                "url",
-                "signature",
-                "paragraph_text",
-              ].includes(field.type) && (
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                    No additional configuration for this field type.
-                  </p>
-                )}
+              {field.type === "date" && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Format de date</Label>
+                  <Select
+                    value={field.field_config.date_format || "yyyy-MM-dd"}
+                    onValueChange={(v) =>
+                      updateFieldConfig(field.id, { date_format: v })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yyyy-MM-dd">yyyy-MM-dd</SelectItem>
+                      <SelectItem value="dd/MM/yyyy">dd/MM/yyyy</SelectItem>
+                      <SelectItem value="MM/dd/yyyy">MM/dd/yyyy</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {field.type === "time" && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Format horaire</Label>
+                  <Select
+                    value={field.field_config.time_format || "24h"}
+                    onValueChange={(v) =>
+                      updateFieldConfig(field.id, { time_format: v as "24h" | "12h" })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="24h">24 heures</SelectItem>
+                      <SelectItem value="12h">12 heures (AM/PM)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {(field.type === "file_upload" || field.type === "image_upload") && (
                 <div className="space-y-4">
@@ -593,8 +626,172 @@ export function PropertiesPanel() {
                       }
                     />
                   </div>
+
+                  {field.type === "file_upload" && (
+                    <div className="space-y-2">
+                      <Label className="text-xs">Types de fichiers autorisés</Label>
+                      <div className="space-y-2">
+                        {[
+                          { label: "Images", value: "image/*" },
+                          { label: "PDF", value: "application/pdf" },
+                          { label: "Documents", value: ".doc,.docx" },
+                          { label: "Tableurs", value: ".xls,.xlsx,.csv" },
+                          { label: "Vidéos", value: "video/*" },
+                          { label: "Audio", value: "audio/*" },
+                        ].map((fileType) => {
+                          const current = (field.field_config.allowed_file_types as string[] | undefined) || [];
+                          const isChecked = current.includes(fileType.value);
+                          return (
+                            <div key={fileType.value} className="flex items-center gap-2">
+                              <Checkbox
+                                id={`filetype-${fileType.value}`}
+                                checked={isChecked}
+                                onCheckedChange={(checked) => {
+                                  const updated = checked
+                                    ? [...current, fileType.value]
+                                    : current.filter((t: string) => t !== fileType.value);
+                                  updateFieldConfig(field.id, {
+                                    allowed_file_types: updated,
+                                  });
+                                }}
+                              />
+                              <Label htmlFor={`filetype-${fileType.value}`} className="text-xs font-normal cursor-pointer">
+                                {fileType.label}
+                              </Label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
+
+              {field.type === "spacer" && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Hauteur (px)</Label>
+                  <Input
+                    type="number"
+                    min={8}
+                    max={120}
+                    value={field.field_config.spacer_size ?? 24}
+                    onChange={(e) =>
+                      updateFieldConfig(field.id, {
+                        spacer_size: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+              )}
+
+              {field.type === "consent_checkbox" && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Texte de consentement</Label>
+                  <Textarea
+                    value={field.field_config.consent_text || ""}
+                    onChange={(e) =>
+                      updateFieldConfig(field.id, {
+                        consent_text: e.target.value,
+                      })
+                    }
+                    placeholder="J'accepte les conditions..."
+                    rows={3}
+                    className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
+                  />
+                </div>
+              )}
+
+              {field.type === "image" && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-xs">URL de l'image</Label>
+                    <Input
+                      value={field.field_config.image_url || ""}
+                      onChange={(e) =>
+                        updateFieldConfig(field.id, {
+                          image_url: e.target.value,
+                        })
+                      }
+                      placeholder="https://..."
+                      className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Texte alternatif</Label>
+                    <Input
+                      value={field.field_config.image_alt || ""}
+                      onChange={(e) =>
+                        updateFieldConfig(field.id, {
+                          image_alt: e.target.value,
+                        })
+                      }
+                      placeholder="Description de l'image"
+                      className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
+                    />
+                  </div>
+                </>
+              )}
+
+              {field.type === "video" && (
+                <div className="space-y-2">
+                  <Label className="text-xs">URL de la vidéo</Label>
+                  <Input
+                    value={field.field_config.video_url || ""}
+                    onChange={(e) =>
+                      updateFieldConfig(field.id, {
+                        video_url: e.target.value,
+                      })
+                    }
+                    placeholder="https://youtube.com/... ou https://vimeo.com/..."
+                    className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
+                  />
+                </div>
+              )}
+
+              {field.type === "accordion" && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Titre de l'accordéon</Label>
+                    <Input
+                      value={field.field_config.accordion_title || ""}
+                      onChange={(e) =>
+                        updateFieldConfig(field.id, {
+                          accordion_title: e.target.value,
+                        })
+                      }
+                      placeholder="Cliquez pour voir le contenu"
+                      className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Contenu</Label>
+                    <Textarea
+                      value={field.field_config.accordion_content || ""}
+                      onChange={(e) =>
+                        updateFieldConfig(field.id, {
+                          accordion_content: e.target.value,
+                        })
+                      }
+                      placeholder="Contenu de l'accordéon..."
+                      rows={4}
+                      className="transition-shadow duration-200 focus:shadow-md focus:shadow-[hsl(var(--primary))]/10"
+                    />
+                  </div>
+                </>
+              )}
+
+              {[
+                "email",
+                "phone",
+                "url",
+                "signature",
+                "paragraph_text",
+                "divider",
+              ].includes(field.type) && (
+                  <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                    Aucune configuration supplémentaire pour ce type de champ.
+                  </p>
+                )}
             </TabsContent>
           )}
         </Tabs>
@@ -665,7 +862,7 @@ function OptionsEditor({
         className="w-full hover-lift"
       >
         <Plus className="h-3.5 w-3.5 mr-1" />
-        Add Option
+        Ajouter une option
       </Button>
     </div>
   );

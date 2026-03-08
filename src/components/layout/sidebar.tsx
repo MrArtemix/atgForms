@@ -4,17 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
-import { Button } from "@/components/ui/button";
+import { useHolding } from "@/lib/hooks/use-holding";
 import {
-  FileText,
-  LayoutDashboard,
-  Layout,
   Building2,
-  Plus,
+  Gauge,
+  LayoutGrid,
   PanelLeftClose,
   PanelLeft,
-  Settings,
-  HelpCircle,
+  SlidersHorizontal,
+  LifeBuoy,
+  Plus,
 } from "lucide-react";
 import {
   Tooltip,
@@ -23,45 +22,26 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const navItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Filiales",
-    href: "/filiales",
-    icon: Building2,
-  },
-  {
-    label: "Formulaires",
-    href: "/forms",
-    icon: FileText,
-  },
-  {
-    label: "Templates",
-    href: "/templates",
-    icon: Layout,
-  },
-];
-
 const bottomNavItems = [
   {
     label: "Paramètres",
     href: "/profile",
-    icon: Settings,
+    icon: SlidersHorizontal,
   },
   {
     label: "Aide",
-    href: "/profile",
-    icon: HelpCircle,
+    href: "/help",
+    icon: LifeBuoy,
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { holding, filiales, loading: filialesLoading } = useHolding();
+
+  const isDashboardActive = pathname === "/dashboard";
+  const isTemplatesActive = pathname === "/templates" || pathname.startsWith("/templates/");
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -72,16 +52,15 @@ export function Sidebar() {
           isCollapsed ? "w-[68px]" : "w-[260px]"
         )}
       >
-        {/* Logo */}
+        {/* Header - Holding Name */}
         <div className="flex h-16 items-center justify-between border-b border-[hsl(var(--border))] px-4">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[hsl(var(--primary))]">
-              <FileText className="h-4 w-4 text-white" />
-            </div>
-            {!isCollapsed && (
-              <span className="text-lg font-semibold text-[hsl(var(--sidebar-foreground))]">
-                ATGForm
-              </span>
+          <Link href="/dashboard" className="flex items-center min-w-0">
+            {isCollapsed ? (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                <img src="/logo_atg.jpeg" alt="ATG" className="h-8 w-8 object-contain" />
+              </div>
+            ) : (
+              <img src="/logo_atg.jpeg" alt="ATG" className="h-10 max-w-[160px] object-contain" />
             )}
           </Link>
           <button
@@ -98,47 +77,161 @@ export function Sidebar() {
 
         {/* Main Navigation */}
         <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-            const linkContent = (
+          {/* Dashboard */}
+          {(() => {
+            const dashboardLink = (
               <Link
-                key={item.href}
-                href={item.href}
+                href="/dashboard"
                 className={cn(
                   "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                  isActive
+                  isDashboardActive
                     ? "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
                     : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
                   isCollapsed && "justify-center px-2"
                 )}
               >
-                {isActive && (
-                  <div className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[hsl(var(--primary))]" />
+                {isDashboardActive && (
+                  <div
+                    className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[hsl(var(--primary))]"
+                    style={{ animation: "slide-indicator 0.2s ease-out both" }}
+                  />
                 )}
-                <item.icon className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span>{item.label}</span>}
+                <Gauge className="h-5 w-5 shrink-0" />
+                {!isCollapsed && <span className="flex-1">Dashboard</span>}
               </Link>
             );
 
             if (isCollapsed) {
               return (
-                <Tooltip key={item.href}>
-                  <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-                  <TooltipContent side="right" className="flex items-center gap-2">
-                    {item.label}
-                  </TooltipContent>
+                <Tooltip>
+                  <TooltipTrigger asChild>{dashboardLink}</TooltipTrigger>
+                  <TooltipContent side="right">Dashboard</TooltipContent>
                 </Tooltip>
               );
             }
+            return dashboardLink;
+          })()}
 
-            return linkContent;
-          })}
+          {/* Filiales Section */}
+          <div className="mt-4 pt-4 border-t border-[hsl(var(--border))]">
+            {!isCollapsed && (
+              <p className="px-3 mb-2 text-xs font-medium uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                Filiales
+              </p>
+            )}
+
+            {filialesLoading ? (
+              <div className="space-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "h-9 skeleton rounded-lg",
+                      isCollapsed ? "w-9 mx-auto" : "mx-3"
+                    )}
+                  />
+                ))}
+              </div>
+            ) : (
+              <>
+                {filiales.map((filiale) => {
+                  const isActive = pathname.startsWith(`/filiales/${filiale.id}`);
+                  const filialeLink = (
+                    <Link
+                      key={filiale.id}
+                      href={`/filiales/${filiale.id}`}
+                      className={cn(
+                        "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
+                          : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
+                        isCollapsed && "justify-center px-2"
+                      )}
+                    >
+                      {isActive && (
+                        <div
+                          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[hsl(var(--primary))]"
+                          style={{ animation: "slide-indicator 0.2s ease-out both" }}
+                        />
+                      )}
+                      <div
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: filiale.dot_color || filiale.color || "#6366f1" }}
+                      />
+                      {!isCollapsed && (
+                        <span className="flex-1 truncate">{filiale.name}</span>
+                      )}
+                    </Link>
+                  );
+
+                  if (isCollapsed) {
+                    return (
+                      <Tooltip key={filiale.id}>
+                        <TooltipTrigger asChild>{filialeLink}</TooltipTrigger>
+                        <TooltipContent side="right">
+                          {filiale.name}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+                  return filialeLink;
+                })}
+
+                {/* Add filiale link */}
+                {!isCollapsed && (
+                  <Link
+                    href="/filiales"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[hsl(var(--muted-foreground))] transition-all duration-200 hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Nouvelle filiale</span>
+                  </Link>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Templates */}
+          <div className="mt-4 pt-4 border-t border-[hsl(var(--border))]">
+            {(() => {
+              const templatesLink = (
+                <Link
+                  href="/templates"
+                  className={cn(
+                    "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    isTemplatesActive
+                      ? "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
+                      : "text-[hsl(var(--sidebar-foreground))] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))]",
+                    isCollapsed && "justify-center px-2"
+                  )}
+                >
+                  {isTemplatesActive && (
+                    <div
+                      className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[hsl(var(--primary))]"
+                      style={{ animation: "slide-indicator 0.2s ease-out both" }}
+                    />
+                  )}
+                  <LayoutGrid className="h-5 w-5 shrink-0" />
+                  {!isCollapsed && <span className="flex-1">Templates</span>}
+                </Link>
+              );
+
+              if (isCollapsed) {
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>{templatesLink}</TooltipTrigger>
+                    <TooltipContent side="right">Templates</TooltipContent>
+                  </Tooltip>
+                );
+              }
+              return templatesLink;
+            })()}
+          </div>
         </nav>
 
         {/* Bottom Navigation */}
         <div className="border-t border-[hsl(var(--border))] p-3">
-          <nav className="space-y-1 mb-3">
+          <nav className="space-y-1">
             {bottomNavItems.map((item) => {
               const isActive = pathname === item.href;
               const linkContent = (
@@ -154,7 +247,10 @@ export function Sidebar() {
                   )}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[hsl(var(--primary))]" />
+                    <div
+                      className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[hsl(var(--primary))]"
+                      style={{ animation: "slide-indicator 0.2s ease-out both" }}
+                    />
                   )}
                   <item.icon className="h-4 w-4 shrink-0" />
                   {!isCollapsed && <span>{item.label}</span>}
@@ -175,18 +271,6 @@ export function Sidebar() {
               return linkContent;
             })}
           </nav>
-
-          {/* New Form Button */}
-          <Button
-            asChild
-            className={cn("w-full active-press", isCollapsed && "px-0")}
-            size={isCollapsed ? "icon" : "default"}
-          >
-            <Link href="/forms">
-              <Plus className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
-              {!isCollapsed && "Nouveau formulaire"}
-            </Link>
-          </Button>
         </div>
       </aside>
     </TooltipProvider>

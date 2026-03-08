@@ -50,3 +50,10 @@ export interface FieldAnalytics {
   median?: number;
   filled?: number;
 }
+
+export interface FunnelStep {
+  page_id: string;
+  page_title: string;
+  sort_order: number;
+  respondents_count: number;
+}

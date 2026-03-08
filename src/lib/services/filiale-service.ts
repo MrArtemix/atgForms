@@ -66,13 +66,13 @@ export const filialeService = {
         };
     },
 
-    async createFiliale(holdingId: string, name: string, description?: string, color?: string): Promise<Filiale> {
+    async createFiliale(holdingId: string, name: string, description?: string, color?: string, logoUrl?: string, dotColor?: string): Promise<Filiale> {
         const res = await fetch("/api/filiales", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ holdingId, name, description, color }),
+            body: JSON.stringify({ holdingId, name, description, color, logoUrl, dotColor }),
         });
 
         if (!res.ok) {

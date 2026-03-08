@@ -53,14 +53,6 @@ const commands: CommandItem[] = [
     category: "navigation",
   },
   {
-    id: "forms",
-    label: "Formulaires",
-    labelEn: "Forms",
-    icon: FileText,
-    href: "/forms",
-    category: "navigation",
-  },
-  {
     id: "templates",
     label: "Templates",
     labelEn: "Templates",
@@ -81,7 +73,7 @@ const commands: CommandItem[] = [
     label: "Nouveau formulaire",
     labelEn: "New Form",
     icon: Plus,
-    href: "/forms",
+    href: "/filiales",
     category: "actions",
     shortcut: "⌘N",
   },
@@ -139,7 +131,7 @@ export function CommandPalette({ user: _user }: CommandPaletteProps) {
       }
       if (e.key === "n" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        router.push("/forms");
+        router.push("/filiales");
         setOpen(false);
       }
     };
@@ -354,7 +346,7 @@ export function CommandPalette({ user: _user }: CommandPaletteProps) {
             </div>
             <span className="flex items-center gap-1">
               <Command className="h-3 w-3" />
-              <span>ATGForm</span>
+              <span>ATG</span>
             </span>
           </div>
         </DialogContent>

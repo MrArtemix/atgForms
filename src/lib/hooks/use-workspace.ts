@@ -36,29 +36,29 @@ export function useWorkspace(workspaceId: string | null) {
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchWorkspace = useCallback(async () => {
     if (!workspaceId) {
       setLoading(false);
       return;
     }
 
-    async function fetch() {
-      const supabase = createClient();
-      const [wsResult, membersResult] = await Promise.all([
-        supabase.from("workspaces").select("*").eq("id", workspaceId).single(),
-        supabase
-          .from("workspace_members")
-          .select("*, profile:profiles(*)")
-          .eq("workspace_id", workspaceId),
-      ]);
+    const supabase = createClient();
+    const [wsResult, membersResult] = await Promise.all([
+      supabase.from("workspaces").select("*").eq("id", workspaceId).single(),
+      supabase
+        .from("workspace_members")
+        .select("*, profile:profiles(*)")
+        .eq("workspace_id", workspaceId),
+    ]);
 
-      setWorkspace(wsResult.data);
-      setMembers(membersResult.data || []);
-      setLoading(false);
-    }
-
-    void fetch();
+    setWorkspace(wsResult.data);
+    setMembers(membersResult.data || []);
+    setLoading(false);
   }, [workspaceId]);
 
-  return { workspace, members, loading };
+  useEffect(() => {
+    void fetchWorkspace();
+  }, [fetchWorkspace]);
+
+  return { workspace, members, loading, refetch: fetchWorkspace };
 }

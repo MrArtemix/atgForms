@@ -20,7 +20,7 @@ export function TimeField({ field, mode, value, onChange, error }: FieldComponen
         <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="time"
-          placeholder={field.placeholder || "Select a time"}
+          placeholder={field.placeholder || "Sélectionner une heure"}
           disabled={mode === "builder"}
           value={mode === "renderer" ? (value as string) || "" : ""}
           onChange={(e) => onChange?.(e.target.value)}

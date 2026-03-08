@@ -10,6 +10,7 @@ export interface Filiale {
     description: string | null;
     logo_url: string | null;
     color: string;
+    dot_color: string | null;
     created_at: string;
     updated_at: string;
 }

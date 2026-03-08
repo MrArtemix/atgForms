@@ -118,18 +118,18 @@ export function computeRequiredOverrides(
 }
 
 export const OPERATOR_LABELS: Record<ConditionalOperator, string> = {
-  equals: "equals",
-  not_equals: "does not equal",
-  contains: "contains",
-  not_contains: "does not contain",
-  greater_than: "is greater than",
-  less_than: "is less than",
-  greater_equal: "is greater than or equal to",
-  less_equal: "is less than or equal to",
-  is_empty: "is empty",
-  is_not_empty: "is not empty",
-  starts_with: "starts with",
-  ends_with: "ends with",
+  equals: "est égal à",
+  not_equals: "n'est pas égal à",
+  contains: "contient",
+  not_contains: "ne contient pas",
+  greater_than: "est supérieur à",
+  less_than: "est inférieur à",
+  greater_equal: "est supérieur ou égal à",
+  less_equal: "est inférieur ou égal à",
+  is_empty: "est vide",
+  is_not_empty: "n'est pas vide",
+  starts_with: "commence par",
+  ends_with: "se termine par",
 };
 
 export const OPERATORS_BY_FIELD_TYPE: Record<string, ConditionalOperator[]> = {

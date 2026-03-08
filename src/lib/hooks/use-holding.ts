@@ -55,5 +55,12 @@ export function useHolding() {
         void fetchHolding();
     }, [fetchHolding]);
 
+    // Re-fetch when filiales are mutated from another component
+    useEffect(() => {
+        const handler = () => void fetchHolding();
+        window.addEventListener("filiales-updated", handler);
+        return () => window.removeEventListener("filiales-updated", handler);
+    }, [fetchHolding]);
+
     return { holding, filiales, loading, refetch: fetchHolding };
 }
