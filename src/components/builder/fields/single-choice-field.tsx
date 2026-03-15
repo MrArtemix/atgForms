@@ -20,14 +20,17 @@ export function SingleChoiceField({ field, mode, value, onChange, error }: Field
         disabled={mode === "builder"}
         className="space-y-2"
       >
-        {(field.options || []).map((option) => (
-          <div key={option.id} className="flex items-center space-x-2">
-            <RadioGroupItem value={option.value} id={`${field.id}-${option.id}`} />
-            <Label htmlFor={`${field.id}-${option.id}`} className="font-normal cursor-pointer">
-              {option.label}
-            </Label>
-          </div>
-        ))}
+        {(field.options || []).map((option, index) => {
+          const key = option.id || `opt-${index}`;
+          return (
+            <div key={key} className="flex items-center space-x-2">
+              <RadioGroupItem value={option.value} id={`${field.id}-${key}`} />
+              <Label htmlFor={`${field.id}-${key}`} className="font-normal cursor-pointer">
+                {option.label}
+              </Label>
+            </div>
+          );
+        })}
       </RadioGroup>
       {error && <p className="text-sm text-[hsl(var(--destructive))]">{error}</p>}
     </div>

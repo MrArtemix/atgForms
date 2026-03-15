@@ -43,3 +43,13 @@ next-env.d.ts
 # qodana
 .qodana/
 qodana.sarif.json
+
+# archives
+/archives_dev/
+
+# python
+/python-backend/venv/
+/python-backend/__pycache__/
+*.pyc
+/python-backend/server.log
+/python-backend/pdf_payload.json

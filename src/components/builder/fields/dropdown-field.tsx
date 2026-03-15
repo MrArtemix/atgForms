@@ -30,8 +30,8 @@ export function DropdownField({ field, mode, value, onChange, error }: FieldComp
           <SelectValue placeholder={field.placeholder || "Sélectionner une option..."} />
         </SelectTrigger>
         <SelectContent>
-          {(field.options || []).map((option) => (
-            <SelectItem key={option.id} value={option.value}>
+          {(field.options || []).map((option, index) => (
+            <SelectItem key={option.id || `opt-${index}`} value={option.value}>
               {option.label}
             </SelectItem>
           ))}

@@ -1,6 +1,5 @@
-import io
 import os
-import base64
+import io
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm, cm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -76,14 +75,16 @@ S.add(ParagraphStyle('HeaderW', parent=S['Normal'],
 def P(text, bold=False):
     if bold:
         text = f"<b>{text}</b>"
-    return Paragraph(str(text), S['Normal'])
+    return Paragraph(text, S['Normal'])
 
 def PW(text, bold=True):
+    """Paragraph en blanc pour les en-têtes de tableau."""
     if bold:
         text = f"<b>{text}</b>"
-    return Paragraph(str(text), S['HeaderW'])
+    return Paragraph(text, S['HeaderW'])
 
 class CheckBox(Flowable):
+    """Dessine un mini carré vide à cocher."""
     def __init__(self, size=10, border_color=BLEU_FONCE, border_width=1.2):
         Flowable.__init__(self)
         self.size = size
@@ -99,6 +100,7 @@ class CheckBox(Flowable):
         self.canv.rect(0, 0, self.size, self.size, fill=1, stroke=1)
 
 class CheckedBox(Flowable):
+    """Dessine un mini carré coché."""
     def __init__(self, size=10, border_color=BLEU_FONCE, check_color=ORANGE, border_width=1.2):
         Flowable.__init__(self)
         self.size = size
@@ -123,34 +125,50 @@ class CheckedBox(Flowable):
         self.canv.line(s * 0.4, m, s - m, s - m)
 
 def CB(options, checked=None):
+    """Crée une rangée de cases à cocher avec labels."""
     if checked is None:
         checked = []
     cells = []
     widths = []
     for o in options:
-        is_checked = any(c.lower() in o.lower() for c in checked if isinstance(c, str))
-        if o in checked or is_checked:
+        is_checked = False
+        o_clean = str(o).strip().lower()
+        o_first_word = o_clean.split()[0] if o_clean else ""
+        for c in checked:
+            if isinstance(c, str) and c.strip() != "":
+                c_clean = c.strip().lower()
+                if c_clean == o_clean or c_clean == o_first_word or o_clean.startswith(c_clean + " ") or o_clean.startswith(c_clean + " "):
+                    is_checked = True
+                    break
+        
+        if (isinstance(o, str) and o.strip() != "" and o in checked) or is_checked:
             cells.append(CheckedBox(size=11))
         else:
             cells.append(CheckBox(size=11))
         cells.append(Paragraph(f" {o}", S['Normal']))
         widths.append(5*mm)
-        widths.append(None)
+        # Calculate exactly how much space the text needs to prevent wrapping AND table overflow
+        text_width = pdfmetrics.stringWidth(f" {o}", FONT, 10)
+        widths.append(text_width + 3*mm)
     t = Table([cells], colWidths=widths)
     t.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 2),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
         ('TOPPADDING', (0, 0), (-1, -1), 0),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
     return t
 
 def divider():
-    return HRFlowable(width="100%", thickness=0.5, color=GRIS_BORD, spaceBefore=2*mm, spaceAfter=1*mm)
+    return HRFlowable(width="100%", thickness=0.5, color=GRIS_BORD,
+                      spaceBefore=2*mm, spaceAfter=1*mm)
 
 def section_title(text):
-    para = Paragraph(f"<b>{text}</b>", ParagraphStyle('SecTitle', parent=S['Heading2'], textColor=BLANC, fontSize=11))
+    """Section title: dark blue background, white text, orange left accent."""
+    para = Paragraph(f"<b>{text}</b>",
+                     ParagraphStyle('SecTitle', parent=S['Heading2'],
+                                    textColor=BLANC, fontSize=11))
     t = Table([[para]], colWidths=[CONTENT_W])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), BLEU_FONCE),
@@ -163,6 +181,7 @@ def section_title(text):
     return t
 
 def styled_table(data, col_widths, has_header=True):
+    """Create a consistently styled table."""
     t = Table(data, colWidths=col_widths)
     style = [
         ('GRID', (0, 0), (-1, -1), 0.5, GRIS_BORD),
@@ -180,6 +199,7 @@ def styled_table(data, col_widths, has_header=True):
             ('TEXTCOLOR', (0, 0), (-1, 0), BLANC),
             ('LINEBELOW', (0, 0), (-1, 0), 1.5, ORANGE),
         ]
+    # Zebra
     for i in range(1 if has_header else 0, len(data)):
         if i % 2 == 0:
             style.append(('BACKGROUND', (0, i), (-1, i), GRIS_ZEBRA))
@@ -189,7 +209,9 @@ def styled_table(data, col_widths, has_header=True):
 def field_row(label, content="______________"):
     if isinstance(content, str):
         content = P(content)
-    t = Table([[P(label, bold=True), content]], colWidths=[55*mm, 68*mm])
+    t = Table([
+        [P(label, bold=True), content]
+    ], colWidths=[55*mm, 68*mm])
     t.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('LINEBELOW', (1, 0), (1, 0), 0.5, GRIS_BORD),
@@ -228,14 +250,16 @@ def draw_background(canvas, doc):
     p2.close()
     canvas.drawPath(p2, fill=1, stroke=0)
 
-    # Left bar — ruban tressé
+    # Left bar — ruban tressé orange / bleu
     band_w = 5 * mm
     seg = 20 * mm
     n = int(h / seg) + 1
 
+    # Fond orange
     canvas.setFillColor(ORANGE)
     canvas.rect(0, 0, band_w, h, fill=1, stroke=0)
 
+    # Vagues bleu nuit par-dessus
     for i in range(n):
         y0 = i * seg
         y1 = min(y0 + seg, h)
@@ -243,11 +267,15 @@ def draw_background(canvas, doc):
         p = canvas.beginPath()
         if i % 2 == 0:
             p.moveTo(0, y0)
-            p.curveTo(band_w * 1.6, y0 + seg * 0.25, band_w * 1.6, y0 + seg * 0.75, 0, y1)
+            p.curveTo(band_w * 1.6, y0 + seg * 0.25,
+                      band_w * 1.6, y0 + seg * 0.75,
+                      0, y1)
             p.lineTo(0, y0)
         else:
             p.moveTo(band_w, y0)
-            p.curveTo(-band_w * 0.6, y0 + seg * 0.25, -band_w * 0.6, y0 + seg * 0.75, band_w, y1)
+            p.curveTo(-band_w * 0.6, y0 + seg * 0.25,
+                      -band_w * 0.6, y0 + seg * 0.75,
+                      band_w, y1)
             p.lineTo(band_w, y0)
         p.close()
         canvas.drawPath(p, fill=1, stroke=0)
@@ -262,8 +290,10 @@ def draw_background(canvas, doc):
     canvas.setFillColor(GRIS_TXT)
     canvas.drawCentredString(w / 2, 7*mm, f"Plateforme BROBROLI by ADEM  •  Page {doc.page}  •  Document confidentiel")
 
+
     # Watermark
-    logo_path = os.path.join(os.path.dirname(__file__), "..", "logo/Logo brobroli version digital.png")
+    base_dir = os.path.join(os.path.dirname(__file__), "..")
+    logo_path = os.path.join(base_dir, "logo/Logo brobroli version digital.png")
     if os.path.exists(logo_path) and has_alpha:
         import reportlab.lib.utils as rl_utils
         try:
@@ -272,15 +302,16 @@ def draw_background(canvas, doc):
             iw, ih = img.getSize()
             wh = ww * ih / iw
             canvas.setFillAlpha(0.06)
-            canvas.drawImage(logo_path, (w - ww) / 2, (h - wh) / 2, width=ww, height=wh, mask='auto')
+            canvas.drawImage(logo_path, (w - ww) / 2, (h - wh) / 2,
+                             width=ww, height=wh, mask='auto')
             canvas.setFillAlpha(1)
         except:
             pass
+
     canvas.restoreState()
 
 # =====================================================================
 # GÉNÉRATION EXPOSÉE POUR LE BACKEND FLASK
-# =====================================================================
 def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -290,7 +321,7 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     )
     story = []
     
-    # Helper getters
+    # Helper getters (from previous version)
     def get_val(keys, default=""):
         if isinstance(keys, str):
             keys = [keys]
@@ -315,36 +346,42 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
                 return [str(val)]
         return []
 
-    # Paths resolved relative to backend script
-    base_dir = os.path.join(os.path.dirname(__file__), "..")
-    logo_inst = os.path.join(base_dir, "logo/Logo brobroli version institutionnelle.png")
+    base_dir = os.path.dirname(__file__)
+    logo_path_institutionnel = os.path.join(base_dir, "static", "Logo brobroli version institutionnelle.png")
     
-    # Extract common variables
-    nom = get_val("Nom")
-    prenoms = get_val("Prénoms")
-    full_name = f"{nom} {prenoms}".strip() or "Non spécifié"
-    ref_dossier = "BRB-" + str(get_val("id", "XXXXX"))
-    metier = get_val("Métier principal", "Non spécifié")
-    cni = get_val(["N° CNI", "N° CNI / Attestation d'identité"], "Non spécifiée")
-    tel = get_val("Téléphone principal", "Non spécifié")
-    commune = get_val("Commune", "Non spécifiée")
-    date_sign = get_val("Date") or get_val("Date de signature") or "Non spécifiée"
+    # Extract data
+    nom = get_val(["Nom", "nom"])
+    prenoms = get_val(["Prénoms", "Prénom", "prénoms", "prénom"])
+    full_name = f"{nom} {prenoms}".strip().replace("_", "") or "[Nom de l'artisan]"
+    # id string will now come through correctly!
+    ref_dossier = "BRB-" + str(get_val([str(k) for k in response_data.keys() if "id" == k.lower()], "XXXXX")).split("-")[0].upper()[:6] if get_val(["id","ID"], "") != "" else "_______________"
+    metier = get_val(["Métier principal", "metier principal"], "")
+    cni = get_val(["N° CNI / Attestation d’identité", "N° CNI / Attestation d'identité", "N° CNI"])
+    tel = get_val(["Téléphone principal", "Tél. principal", "Téléphone"])
+    commune = get_val("Commune")
+    
+    # Format date to French format (DD/MM/YYYY)
+    raw_date = get_val(["Date", "Date de signature"])
+    if raw_date and "T" in raw_date:
+        parts = raw_date.split("T")[0].split("-")
+        if len(parts) == 3:
+            date_sign = f"{parts[2]}/{parts[1]}/{parts[0]}"
+        else:
+            date_sign = raw_date.split("T")[0]
+    else:
+        date_sign = raw_date if raw_date else "______________"
 
     # ── EN-TÊTE : Logo + QR Code ──────────────────────────────
     try:
-        logo = Image(logo_inst, height=25*mm, width=60*mm, kind='proportional')
+        logo = Image(logo_path_institutionnel, height=25*mm, width=60*mm, kind='proportional')
     except:
-        logo = Paragraph("<font color='#131F36'><b>BROBROLI</b></font><br/><font color='#F26122'>by ADEM</font>", S['Normal'])
+        logo = Paragraph("<font color='#131F36'><b>BROBROLI</b></font><br/>"
+                         "<font color='#F26122'>by ADEM</font>", S['Normal'])
 
     qr_text = (
-        f"BROBROLI - Fiche Artisan\n"
-        f"Nom: {full_name}\n"
-        f"N° Dossier: {ref_dossier}\n"
-        f"Métier: {metier}\n"
-        f"Tél: {tel}\n"
-        f"Commune: {commune}\n"
-        f"Date: {date_sign}\n"
-        f"Statut: Enregistré"
+        f"BROBROLI Validation\n"
+        f"Artisan: {full_name}\n"
+        f"Statut: Enregistrement Officiel"
     )
     qr = QrCodeWidget(qr_text)
     qr.barHeight = 28 * mm
@@ -394,17 +431,15 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     story.append(Spacer(1, 2*mm))
 
     fields = [
-        field_row("Nom", nom), 
-        field_row("Prénoms", prenoms),
-        field_row("Sexe", CB(["M", "F"], checked=get_list("Sexe"))),
-        field_row("Date de naissance", get_val("Date de naissance")), 
-        field_row("Lieu de naissance", get_val("Lieu de naissance")),
-        field_row("Nationalité", get_val("Nationalité", "Ivoirienne")),
-        field_row("N° CNI / Attestation", cni),
-        field_row("Tél. principal", tel),
-        field_row("Email", get_val("Email")),
-        field_row("Commune", commune), 
-        field_row("Région", get_val("Région", "Abidjan")),
+        field_row("Nom", nom or "______________"), field_row("Prénoms", prenoms or "______________"),
+        field_row("Sexe", CB(["M", "F"], checked=get_list(["Sexe", "sexe"]))),
+        field_row("Date de naissance", get_val(["Date de naissance", "date de naissance"]) or "______________"), 
+        field_row("Lieu de naissance", get_val(["Lieu de naissance", "lieu de naissance"]) or "______________"),
+        field_row("Nationalité", get_val(["Nationalité", "nationalité"], "Ivoirienne")),
+        field_row("N° CNI / Attestation", cni or "______________"),
+        field_row("Tél. principal", tel or "______________"),
+        field_row("Email", get_val(["Email", "email", "E-mail", "e-mail"]) or "______________"),
+        field_row("Commune", commune or "______________"), field_row("Région", get_val(["Région", "région"], "Abidjan")),
     ]
 
     left = Table([[f] for f in fields], colWidths=[130*mm])
@@ -415,32 +450,50 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
 
-    # Photo integration (checking response data for base64 photo or http URL)
+    # Photo integration 
     photo_img = None
     for k, v in response_data.items():
-        if isinstance(v, str) and ("photo" in k.lower() or "profil" in k.lower()):
-            urls = [u.strip() for u in v.split(',')]
-            url = urls[0] if urls else ""
-            if url.startswith("data:image/"):
+        if isinstance(v, str) and ("photo" in k.lower() or "profil" in k.lower() or "image" in k.lower()):
+            import base64
+            # A base64 image could be in a comma-separated list or just standalone.
+            # Find the first occurrence of data:image/
+            if "data:image/" in v:
                 try:
-                    img_data = base64.b64decode(url.split(",")[1])
-                    img_io = io.BytesIO(img_data)
-                    photo_img = Image(img_io, width=35*mm, height=35*mm, kind='direct')
-                    break
-                except Exception:
-                    pass
-            elif url.startswith("http"):
-                try:
-                    import urllib.request
-                    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(req) as response:
-                        img_data = response.read()
-                    img_io = io.BytesIO(img_data)
-                    photo_img = Image(img_io, width=35*mm, height=35*mm, kind='direct')
-                    break
+                    # Extract the part starting with data:image/ up to the next space or end of string
+                    start_idx = v.find("data:image/")
+                    # The actual base64 data is after the first comma following data:image/
+                    comma_idx = v.find(",", start_idx)
+                    if comma_idx != -1:
+                        # Find the end of this base64 string (either a space, another data:, or end of string)
+                        end_idx = v.find(" data:image/", comma_idx)
+                        if end_idx == -1:
+                            end_idx = len(v)
+                        
+                        b64_str = v[comma_idx+1:end_idx].strip()
+                        # If it mistakenly caught a trailing comma from a list join, strip it
+                        if b64_str.endswith(","):
+                            b64_str = b64_str[:-1]
+                            
+                        img_data = base64.b64decode(b64_str)
+                        img_io = io.BytesIO(img_data)
+                        photo_img = Image(img_io, width=35*mm, height=35*mm, kind='direct')
+                        break
                 except Exception as e:
-                    print("Erreur de téléchargement d'image:", e)
-                    pass
+                    print("Erreur photo base64:", e)
+            elif "http" in v:
+                urls = [u.strip() for u in v.split(',')]
+                url = [u for u in urls if u.startswith("http")][0] if any(u.startswith("http") for u in urls) else ""
+                if url:
+                    try:
+                        import urllib.request
+                        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                        with urllib.request.urlopen(req) as response:
+                            img_data = response.read()
+                        img_io = io.BytesIO(img_data)
+                        photo_img = Image(img_io, width=35*mm, height=35*mm, kind='direct')
+                        break
+                    except Exception as e:
+                        print("Erreur photo url:", e)
                 
     if not photo_img:
         photo_img = Paragraph("<para alignment='center'>Photo 4x4<br/><b>À coller</b></para>", S['Normal'])
@@ -467,14 +520,14 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
 
     profil_data = [
         [PW("Élément"), PW("Détail")],
-        [P("Métier principal"), CB(["Plombier", "Électricien", "Peintre", "Clim/Froid", "Menuisier", "Maçon"], checked=[metier])],
-        [P("Métier(s) secondaire(s)"), P(get_val("Métier(s) secondaire(s)"))],
-        [P("Années d'expérience"), CB(["<5 ans", "5–10 ans", "10+ ans"], checked=get_list("Années d'expérience") or get_list("Années d’expérience"))],
-        [P("Formation professionnelle"), CB(["CAP", "BEP", "BT", "BTS", "Licence", "Aucun"], checked=get_list("Formation professionnelle") or get_list("Formation"))],
-        [P("Établissement de formation"), P(get_val("Établissement de formation") or get_val("Établissement"))],
-        [P("Diplôme certifié ?"), CB(["Oui", "Non"], checked=get_list("Diplôme certifié ?") or get_list("Diplôme certifié"))],
-        [P("N° Diplôme"), P(get_val("N° Diplôme (si applicable)") or get_val("N° Diplôme"))],
-        [P("Entreprises / chantiers majeurs"), P(get_val("Anciennes entreprises / chantiers majeurs"))],
+        [P("Métier principal"), CB(["Plombier", "Électricien", "Peintre", "Clim/Froid", "Autre"], checked=[metier])],
+        [P("Métier(s) secondaire(s)"), P(get_val(["Métier(s) secondaire(s)", "Métier secondaire"]) or "______________")],
+        [P("Années d'expérience"), CB(["<5 ans", "5–10 ans", "10+ ans"], checked=get_list(["Années d'expérience", "Années d’expérience", "Années d" + chr(39) + "expérience", "Années d’expérience (dans le métier)"]))],
+        [P("Formation professionnelle"), CB(["CAP", "BEP", "BT", "BTS", "Licence", "Aucun"], checked=get_list(["Formation professionnelle", "Formation", "Niveau de formation"]))],
+        [P("Établissement de formation"), P(get_val(["Établissement de formation", "Établissement"]) or "______________")],
+        [P("Diplôme certifié ?"), CB(["Oui", "Non"], checked=get_list(["Diplôme certifié ?", "Diplôme certifié"]))],
+        [P("N° Diplôme"), P(get_val(["N° Diplôme (si applicable)", "N° Diplôme"]) or "______________")],
+        [P("Entreprises / chantiers majeurs"), P(get_val(["Entreprises / chantiers majeurs", "Anciennes entreprises / chantiers majeurs"]) or "______________")],
     ]
     story.append(styled_table(profil_data, [55*mm, CONTENT_W - 55*mm]))
     story.append(divider())
@@ -482,48 +535,45 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     # ── 3. CATÉGORISATION BROBROLI ────────────────────────────
     cat_title = section_title("CATÉGORISATION BROBROLI")
 
-    # This might not be directly in the form response, it's often a derived value, 
-    # but let's try to extract if if present "Catégorie A – Certifiés" or "Label AASS"
-    cat_a = get_val("Catégorie A – Certifiés")
-    cat_b = get_val("Catégorie B – Non certifiés")
-    label_aass = get_val("Label AASS")
+    cat_a = get_val("Catégorie A – Certifiés", "")
+    cat_b = get_val("Catégorie B – Non certifiés", "")
     
     cat_data = [
-        [P("Catégorie (Calculée ou auto-évaluée)", True)],
-        [P(cat_a or cat_b or "En attente d'évaluation")]
+        [P("Catégorie A – Certifiés", True)],
+        [CB(["A1 (<5 ans)", "A1+ (5–10 ans)", "A1++ (10+ ans)"], checked=[cat_a])],
+        [P("Catégorie B – Non certifiés", True)],
+        [CB(["B1 (<5 ans)", "B1+ (5–10 ans)", "B1++ (10+ ans)"], checked=[cat_b])],
     ]
-    if label_aass:
-        cat_data.append([P("Label AASS", True)])
-        cat_data.append([P(label_aass)])
-        
     cat = Table(cat_data, colWidths=[CONTENT_W])
     cat.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), FONT),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('BOX', (0, 0), (-1, -1), 0.5, GRIS_BORD),
         ('LINEBELOW', (0, 0), (-1, 0), 0.5, GRIS_BORD),
+        ('LINEBELOW', (0, 1), (-1, 1), 0.5, GRIS_BORD),
+        ('LINEBELOW', (0, 2), (-1, 2), 0.5, GRIS_BORD),
         ('BACKGROUND', (0, 0), (-1, 0), BLEU_CLAIR),
+        ('BACKGROUND', (0, 2), (-1, 2), BLEU_CLAIR),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('TOPPADDING', (0, 0), (-1, -1), 3),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
     ]))
     story.append(KeepTogether([cat_title, Spacer(1, 1*mm), cat]))
 
+
     # ── 4. DOCUMENTS À FOURNIR ────────────────────────────────
-    story.append(PageBreak())
     story.append(section_title("DOCUMENTS À FOURNIR"))
     story.append(Spacer(1, 2*mm))
 
-    docs_all = ["CNI / Document adimistratif", "Copie diplôme (si certifié)", "Attestation d'expérience",
+    docs = ["CNI / Document adimistratif", "Copie diplôme (si certifié)", "Attestation d'expérience",
             "Extrait casier judiciaire", "Attestation responsabilité civile",
             "RIB / Mobile Money", "Photo en situation de travail", "Carte CMU"]
-            
-    # Try to map what the user supplied vs standard list
+
     provided_docs = get_list("Documents à fournir")
 
     doc_cells = []
-    for d in docs_all:
-        is_checked = any(c.lower() in d.lower() or d.lower() in c.lower() for c in provided_docs)
+    for d in docs:
+        is_checked = any(c.strip() != "" and (c.lower() in d.lower() or d.lower() in c.lower()) for c in provided_docs)
         box = CheckedBox(size=11) if is_checked else CheckBox(size=11)
         cb_t = Table([[box, Paragraph(f" {d}", S['Normal'])]],
                      colWidths=[5*mm, CONTENT_W/3 - 5*mm])
@@ -555,7 +605,7 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     equipments_checked = get_list("Équipements disponibles")
 
     def cb_cell_equip(label):
-        is_checked = any(label.lower() in e.lower() or e.lower() in label.lower() for e in equipments_checked)
+        is_checked = any(e.strip() != "" and (label.lower() in e.lower() or e.lower() in label.lower()) for e in equipments_checked)
         if is_checked:
             return Table([[CheckedBox(size=11)]], colWidths=[5*mm])
         return Table([[CheckBox(size=11)]], colWidths=[5*mm])
@@ -577,10 +627,10 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
 
     zone_data = [
         [PW("Élément"), PW("Détail")],
-        [P("Zone(s) d'intervention"), P(get_val("Zone(s) d’intervention") or get_val("Zone(s) d'intervention"))],
-        [P("Disponible immédiatement"), CB(["Oui", "Non"], checked=get_list("Disponible immédiatement"))],
-        [P("Horaires habituels"), P(get_val("Horaires habituels"))],
-        [P("Intervention d'urgence possible"), CB(["Oui", "Non"], checked=get_list("Intervention d’urgence possible") or get_list("Intervention d'urgence"))],
+        [P("Zone(s) d'intervention"), P(get_val(["Zone(s) d'intervention", "Zone(s) d’intervention"]) or "______________")],
+        [P("Disponible immédiatement"), CB(["Oui", "Non"], checked=get_list(["Disponible immédiatement", "Disponibilité immédiate"]))],
+        [P("Horaires habituels"), P(get_val(["Horaires habituels", "Horaires de travail habituels"]) or "______________")],
+        [P("Intervention d'urgence possible"), CB(["Oui", "Non"], checked=get_list(["Intervention d’urgence possible", "Intervention d'urgence"]))],
     ]
     story.append(styled_table(zone_data, [60*mm, CONTENT_W - 60*mm]))
     story.append(divider())
@@ -588,8 +638,9 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     # ── 7. ENGAGEMENT OFFICIEL ────────────────────────────────
     story.append(section_title("ENGAGEMENT OFFICIEL"))
     story.append(Spacer(1, 2*mm))
+    
+    nom_signataire = full_name if full_name != "[Nom de l'artisan]" else "Mr_________________________"
 
-    nom_signataire = full_name
     eng_text = (
         f"Je soussigné(e) <u>{nom_signataire}</u> déclare exactes les informations fournies et m'engage à :"
         "<br/><br/>"
@@ -610,43 +661,53 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
         ('LINEBEFORE', (0, 0), (0, -1), 3, ORANGE),
     ]))
     story.append(eng)
-    story.append(Spacer(1, 2*mm))
+    story.append(Spacer(1, 10*mm))
 
-    # Signature
-    half = CONTENT_W / 2
-    
     # Signature integration
     sig_img = None
     for k, v in response_data.items():
         if isinstance(v, str) and "signature" in k.lower():
-            urls = [u.strip() for u in v.split(',')]
-            url = urls[0] if urls else ""
-            if url.startswith("data:image/"):
+            import base64
+            if "data:image/" in v:
                 try:
-                    img_data = base64.b64decode(url.split(",")[1])
-                    img_io = io.BytesIO(img_data)
-                    sig_img = Image(img_io, width=40*mm, height=20*mm, kind='proportional')
-                    break
-                except Exception:
-                    pass
-            elif url.startswith("http"):
-                try:
-                    import urllib.request
-                    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(req) as response:
-                        img_data = response.read()
-                    img_io = io.BytesIO(img_data)
-                    sig_img = Image(img_io, width=40*mm, height=20*mm, kind='proportional')
-                    break
+                    start_idx = v.find("data:image/")
+                    comma_idx = v.find(",", start_idx)
+                    if comma_idx != -1:
+                        end_idx = v.find(" data:image/", comma_idx)
+                        if end_idx == -1:
+                            end_idx = len(v)
+                        
+                        b64_str = v[comma_idx+1:end_idx].strip()
+                        if b64_str.endswith(","):
+                            b64_str = b64_str[:-1]
+                            
+                        img_data = base64.b64decode(b64_str)
+                        img_io = io.BytesIO(img_data)
+                        sig_img = Image(img_io, width=40*mm, height=20*mm, kind='proportional')
+                        break
                 except Exception as e:
-                    print("Erreur de téléchargement de signature:", e)
-                    pass
+                    print("Erreur signature base64:", e)
+            elif "http" in v:
+                urls = [u.strip() for u in v.split(',')]
+                url = [u for u in urls if u.startswith("http")][0] if any(u.startswith("http") for u in urls) else ""
+                if url:
+                    try:
+                        import urllib.request
+                        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                        with urllib.request.urlopen(req) as response:
+                            img_data = response.read()
+                        img_io = io.BytesIO(img_data)
+                        sig_img = Image(img_io, width=40*mm, height=20*mm, kind='proportional')
+                        break
+                    except Exception as e:
+                        print("Erreur signature url:", e)
                 
     if not sig_img:
-        sig_img = P(full_name)
+        sig_img = P(full_name if full_name != "[Nom de l'artisan]" else "_________________________")
         
-    date_img = P(date_sign)
+    date_img = P(date_sign if date_sign != "______________" else "_________________________")
 
+    half = CONTENT_W / 2
     sign = Table([
         [P("Signature :", True), P("Date :", True)],
         [sig_img, date_img]
@@ -654,11 +715,10 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     sign.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), FONT),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
         ('LINEABOVE', (0, 1), (0, 1), 0.5, BLEU_FONCE),
         ('LINEABOVE', (1, 1), (1, 1), 0.5, BLEU_FONCE),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('TOPPADDING', (0, 1), (-1, 1), 0),
     ]))
     story.append(sign)
 
@@ -666,3 +726,8 @@ def generate_fiche_officielle(response_data: dict) -> io.BytesIO:
     doc.build(story, onFirstPage=draw_background, onLaterPages=draw_background)
     buffer.seek(0)
     return buffer
+
+if __name__ == "__main__":
+    generate_artisan_fiche(
+        output_filename="FICHE_OFFICIELLE_ENREGISTREMENT_ARTISANS_BROBROLI.pdf"
+    )

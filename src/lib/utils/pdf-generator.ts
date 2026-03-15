@@ -12,8 +12,18 @@ export function getAnswerTextValue(answer: ResponseWithAnswers["answers"][number
     if (answer.value_date) return answer.value_date;
     if (answer.value_time) return answer.value_time;
     if (answer.value_json) {
-        if (Array.isArray(answer.value_json))
+        if (Array.isArray(answer.value_json)) {
+            // Check if this array contains file paths (usually containing '/')
+            const firstItem = String(answer.value_json[0]);
+            if (firstItem && firstItem.includes('/')) {
+                // Return comma separated list of public URLs constructed directly based on typical Supabase URL structures
+                const projectId = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+                return (answer.value_json as string[]).map(path => {
+                    return `${projectId}/storage/v1/object/public/response-uploads/${path}`;
+                }).join(",");
+            }
             return (answer.value_json as string[]).join(", ");
+        }
         return JSON.stringify(answer.value_json);
     }
     return "";
@@ -57,7 +67,75 @@ export async function generateDocumentPDF(
     fields: FormField[],
     response: ResponseWithAnswers
 ): Promise<Blob> {
+
+    const isFicheArtisan = typeof template.id === 'string' && 
+        (template.id.toLowerCase().includes("fiche") || template.id.toLowerCase().includes("artisan") || template.id === "1");
+        
+    const isFicheArtisanByTitle = typeof template.name === 'string' &&
+        (template.name.toLowerCase().includes("fiche") || template.name.toLowerCase().includes("artisan"));
+
+    if (isFicheArtisan || isFicheArtisanByTitle) {
+        // Prepare answer pairs
+        const answersMap: Record<string, any> = {};
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+        
+        for (const answer of response.answers) {
+            const field = fields.find(f => f.id === answer.field_id);
+            if (!field) continue;
+            
+            // Special handling for signature fields - pass raw base64 data
+            if (field.type === 'signature' && answer.value_text) {
+                answersMap[field.label] = answer.value_text; // base64 data URL
+                continue;
+            }
+            
+            // Special handling for image_upload fields - construct public URLs
+            if (field.type === 'image_upload' && answer.value_json && Array.isArray(answer.value_json)) {
+                const urls = (answer.value_json as string[]).map(path => 
+                    `${supabaseUrl}/storage/v1/object/public/response-uploads/${path}`
+                );
+                answersMap[field.label] = urls.length === 1 ? urls[0] : urls.join(',');
+                continue;
+            }
+            
+            answersMap[field.label] = getAnswerTextValue(answer);
+        }
+        
+        console.log("Answers map being sent:", answersMap);
+        
+        // Add metadata for PDF rendering
+        answersMap["id"] = response.id;
+        answersMap["Date de signature"] = response.created_at || new Date().toISOString();
+
+        try {
+            const pythonBackendUrl = process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || "http://127.0.0.1:8002";
+            const res = await fetch(`${pythonBackendUrl}/generate-pdf`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    template_id: template.name || template.id,
+                    answers: answersMap
+                })
+            });
+
+            if (!res.ok) {
+                console.error("Backend PDF generation failed:", await res.text());
+                throw new Error("Erreur du backend de génération de PDF");
+            }
+
+            return await res.blob();
+        } catch (error) {
+            console.error("Failed to generate PDF from Python backend:", error);
+            // Fallback to jsPDF if backend fails or we could just throw
+            // throw error;
+        }
+    }
+
     const layout = template.layout;
+    if (!layout) {
+        throw new Error("Le template ne contient pas de layout valide.");
+    }
+
     const doc = new jsPDF({
         orientation: layout.orientation || "portrait",
         unit: "mm",
@@ -135,9 +213,10 @@ export async function generateDocumentPDF(
 
     doc.setTextColor(...hexToRgb(textColor));
 
-    for (const section of layout.sections) {
+    for (const section of layout.sections || []) {
         switch (section.type) {
             case "text": {
+                if (!section.content) break;
                 const s = section.style;
                 doc.setFontSize(s?.fontSize || 11);
                 doc.setFont("helvetica", s?.bold ? "bold" : (s?.italic ? "italic" : "normal"));
@@ -191,6 +270,7 @@ export async function generateDocumentPDF(
             }
 
             case "fields_table": {
+                if (!section.fields?.length) break;
                 const s = section.style;
                 const labelsToInclude = section.fields.map(f => f.trim().toLowerCase());
                 doc.setFontSize(10);
@@ -258,6 +338,7 @@ export async function generateDocumentPDF(
             }
 
             case "signature_block": {
+                if (!section.labels?.length) break;
                 checkPageBreak(40);
                 y += 10;
 

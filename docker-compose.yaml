@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_PYTHON_BACKEND_URL: https://forms.atg.ci
+        NEXT_PUBLIC_APP_URL: https://forms.atg.ci
+    container_name: brobroli-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      # The frontend fetch calls will go to the same domain, and Traefik will route /generate-pdf to the backend
+      - NEXT_PUBLIC_PYTHON_BACKEND_URL=https://forms.atg.ci
+      - NEXT_PUBLIC_APP_URL=https://forms.atg.ci
+    networks:
+      - traefik-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brobroli-frontend.rule=Host(`forms.atg.ci`)"
+      - "traefik.http.routers.brobroli-frontend.entrypoints=websecure"
+      - "traefik.http.routers.brobroli-frontend.tls.certresolver=letsencrypt" # Adjust the resolver name if different
+      - "traefik.http.services.brobroli-frontend.loadbalancer.server.port=3000"
+
+  backend:
+    build:
+      context: ./python-backend
+      dockerfile: Dockerfile
+    container_name: brobroli-backend
+    restart: unless-stopped
+    networks:
+      - traefik-net
+    labels:
+      - "traefik.enable=true"
+      # Route both the API endpoint and the static assets to the backend
+      - "traefik.http.routers.brobroli-backend.rule=Host(`forms.atg.ci`) && (PathPrefix(`/generate-pdf`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.brobroli-backend.entrypoints=websecure"
+      - "traefik.http.routers.brobroli-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brobroli-backend.loadbalancer.server.port=8002"
+
+networks:
+  traefik-net:
+    external: true # Assumes a pre-existing Traefik network

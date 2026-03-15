@@ -1,8 +1,10 @@
-from flask import Flask, request, Response, jsonify
+import os
+from flask import Flask, request, Response, jsonify, send_from_directory
 from flask_cors import CORS
 import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+
 from reportlab.lib import colors
 from fiche_officielle import generate_fiche_officielle
 
@@ -10,19 +12,37 @@ app = Flask(__name__)
 # Permettre à Next.js (port 3002 ou autre) d'appeler cette API
 CORS(app)
 
+# Route pour servir les fichiers statiques (images, logos, etc.)
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    return send_from_directory(static_dir, filename)
+
 @app.route("/generate-pdf", methods=["POST"])
 def generate_pdf():
     try:
         data = request.json
+        import json
+        with open('pdf_payload.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+            
+        print("RECEIVED PDF DATA:", data)
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
             
         template_id = data.get("template_id", "default")
         template_schema = data.get("template_schema", None)
-        response_data = data.get("response_data", {})
         
-        # Route logic for specific complex models
-        if "fiche officielle" in template_id.lower() or "artisan" in template_id.lower():
+        # Le frontend peut envoyer les données sous "response_data" (ancien format) ou "answers" (nouveau format)
+        response_data = data.get("response_data") or data.get("answers") or {}
+        
+        # Si on détecte qu'il s'agit du modèle fiche artisan (ou si le frontend envoie directement format answers sans schema)
+        is_fiche_artisan = template_id and ("fiche" in template_id.lower() or "artisan" in template_id.lower())
+        if not is_fiche_artisan and data.get("answers"):
+            # L'ancien fetch utilise answers, on le traite comme fiche artisan
+            is_fiche_artisan = True
+
+        if is_fiche_artisan:
             buffer = generate_fiche_officielle(response_data)
             headers = {
                 "Content-Disposition": f"attachment; filename=fiche_artisan.pdf",
@@ -115,8 +135,8 @@ def generate_pdf():
                 
                 y -= 25
 
-        c.save()
-        buffer.seek(0)
+            c.save()
+            buffer.seek(0)
         
         # Retourner le PDF directement avec les bons headers
         headers = {

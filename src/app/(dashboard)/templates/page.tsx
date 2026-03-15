@@ -38,6 +38,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { PdfPreviewDialog } from "@/components/common/pdf-preview-dialog";
 import {
   Select,
   SelectContent,
@@ -278,10 +279,11 @@ export default function TemplatesPage() {
       setPreviewOpen(true);
     } catch (error) {
       console.error("Error generating PDF preview:", error);
+      const message = error instanceof Error ? error.message : "Erreur inconnue";
       toast({
-        title: "Erreur",
+        title: "Erreur de génération PDF",
         variant: "destructive",
-        description: "Impossible de générer l'aperçu du PDF.",
+        description: message,
       });
     } finally {
       setIsGeneratingPreview(null);
@@ -573,52 +575,14 @@ export default function TemplatesPage() {
         ))}
 
       {/* Dialog Preview PDF */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden animate-scale-in">
-          <DialogHeader className="p-5 border-b border-[hsl(var(--border))]">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
-                <FileText className="h-4 w-4" />
-              </div>
-              <div>
-                <DialogTitle className="text-base">
-                  {previewTemplate?.name}
-                </DialogTitle>
-                <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
-                  Aperçu du document avec données fictives
-                </p>
-              </div>
-            </div>
-          </DialogHeader>
-          <div className="flex-1 w-full bg-[hsl(var(--muted))]/20 relative">
-            {pdfBlobUrl ? (
-              <iframe
-                src={`${pdfBlobUrl}#toolbar=0`}
-                className="w-full h-full border-0"
-                title={`Preview PDF - ${previewTemplate?.name}`}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--muted-foreground))]" />
-              </div>
-            )}
-          </div>
-          <DialogFooter className="p-4 border-t border-[hsl(var(--border))]">
-            <div className="flex justify-end gap-2 w-full">
-              <Button variant="outline" onClick={() => setPreviewOpen(false)}>
-                Fermer
-              </Button>
-              <Button
-                onClick={handleDownloadPreview}
-                className="hover-lift active-press"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Télécharger l&apos;exemple
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PdfPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        pdfUrl={pdfBlobUrl}
+        title={previewTemplate?.name || ""}
+        subtitle="Aperçu du document avec données fictives"
+        onDownload={handleDownloadPreview}
+      />
 
       {/* Project Selection Dialog */}
       <Dialog open={projectSelectOpen} onOpenChange={setProjectSelectOpen}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "@/lib/hooks/use-form";
 import { responseService } from "@/lib/services/response-service";
@@ -13,22 +13,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { PageHeader, PageShell } from "@/components/layout/page-shell";
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
   FileX,
-  FileOutput,
-  Loader2,
-  Download,
-  ExternalLink,
   User,
   Mail,
   Calendar,
@@ -38,9 +28,6 @@ import {
   Clock,
 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils/date";
-
-const PDF_API_URL =
-  process.env.NEXT_PUBLIC_PDF_API_URL || "http://127.0.0.1:8002";
 
 function parseUserAgent(ua: string | null): string {
   if (!ua) return "-";
@@ -79,9 +66,6 @@ export default function ResponseDetailPage() {
   const [response, setResponse] = useState<ResponseWithAnswers | null>(null);
   const [loading, setLoading] = useState(true);
   const [responseIds, setResponseIds] = useState<string[]>([]);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
 
   // Fetch all response IDs for navigation
   useEffect(() => {
@@ -124,70 +108,6 @@ export default function ResponseDetailPage() {
     const targetId = responseIds[targetIndex];
     if (targetId) router.push(`/forms/${formId}/responses/${targetId}`);
   };
-
-  const handleProduceDoc = useCallback(async () => {
-    if (!form || !response) return;
-    setPdfLoading(true);
-
-    try {
-      // Construire le mapping field_id → label pour cette réponse
-      const fieldsMap: Record<string, string> = {};
-      if (Array.isArray(form.fields)) {
-        for (const f of form.fields) {
-          fieldsMap[f.id] = f.label;
-        }
-      } else {
-        for (const [id, f] of Object.entries(form.fields)) {
-          fieldsMap[id] = (f as { label: string }).label;
-        }
-      }
-
-      // Construire les données label → valeur
-      const answersData: Record<string, unknown> = {};
-      for (const ans of response.answers) {
-        const label = fieldsMap[ans.field_id] || ans.field_id;
-        const value =
-          ans.value_text ??
-          ans.value_number ??
-          ans.value_boolean ??
-          ans.value_date ??
-          ans.value_time ??
-          ans.value_json ??
-          null;
-        answersData[label] = value;
-      }
-
-      const payload = {
-        form_id: formId,
-        response_id: responseId,
-        form_title: form.title,
-        respondent_name: response.respondent_name,
-        respondent_email: response.respondent_email,
-        submitted_at: response.created_at,
-        answers: answersData,
-      };
-
-      const res = await fetch(`${PDF_API_URL}/generate-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Erreur serveur: ${res.status}`);
-      }
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setPdfUrl(url);
-      setPdfDialogOpen(true);
-    } catch (error) {
-      console.error("Erreur lors de la génération du PDF:", error);
-      alert("Impossible de générer le document. Vérifiez que le serveur PDF est actif.");
-    } finally {
-      setPdfLoading(false);
-    }
-  }, [form, response, formId, responseId]);
 
   if (formLoading || loading) {
     return (
@@ -234,18 +154,6 @@ export default function ResponseDetailPage() {
         description={`Formulaire : ${form.title}`}
         primaryAction={
           <div className="flex items-center gap-2">
-            <Button
-              onClick={handleProduceDoc}
-              disabled={pdfLoading}
-              className="hover-lift active-press bg-[#131F36] hover:bg-[#1E3A5F] text-white"
-            >
-              {pdfLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <FileOutput className="mr-2 h-4 w-4" />
-              )}
-              {pdfLoading ? "Génération..." : "Produire un doc"}
-            </Button>
             <Button
               variant="outline"
               onClick={() => router.push(`/forms/${formId}/responses`)}
@@ -390,65 +298,6 @@ export default function ResponseDetailPage() {
         />
       </div>
 
-      {/* Dialog preview PDF */}
-      <Dialog
-        open={pdfDialogOpen}
-        onOpenChange={(open) => {
-          setPdfDialogOpen(open);
-          if (!open && pdfUrl) {
-            URL.revokeObjectURL(pdfUrl);
-            setPdfUrl(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0">
-          <DialogHeader className="px-6 pt-5 pb-3 border-b">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-lg">
-                Fiche Officielle – {response.respondent_name || "Artisan"}
-              </DialogTitle>
-              <div className="flex items-center gap-2">
-                {pdfUrl && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const a = document.createElement("a");
-                        a.href = pdfUrl;
-                        a.download = `FICHE_${(response.respondent_name || "ARTISAN").toUpperCase().replace(/\s+/g, "_")}.pdf`;
-                        a.click();
-                      }}
-                      className="hover-lift"
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Télécharger
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(pdfUrl, "_blank")}
-                      className="hover-lift"
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Ouvrir
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          </DialogHeader>
-          <div className="flex-1 min-h-0">
-            {pdfUrl && (
-              <iframe
-                src={pdfUrl}
-                className="w-full h-full border-0"
-                title="Aperçu du document PDF"
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </PageShell>
   );
 }

@@ -46,6 +46,7 @@ import {
   AlignLeft,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { PdfPreviewDialog } from "@/components/common/pdf-preview-dialog";
 import { createClient } from "@/lib/supabase/client";
 
 interface ResponseDetailProps {
@@ -293,6 +294,9 @@ export function ResponseDetail({
 }: ResponseDetailProps) {
   const [docTemplates, setDocTemplates] = useState<DocumentTemplate[]>([]);
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [previewTemplateName, setPreviewTemplateName] = useState("");
   const { toast } = useToast();
   const supabase = useMemo(() => createClient(), []);
 
@@ -305,6 +309,12 @@ export function ResponseDetail({
     }
   }, [formId]);
 
+  useEffect(() => {
+    return () => {
+      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+    };
+  }, [pdfBlobUrl]);
+
   const handleGeneratePdf = async (template: DocumentTemplate) => {
     setIsGenerating(template.id);
     try {
@@ -314,30 +324,41 @@ export function ResponseDetail({
         fields,
         response
       );
+      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${template.name}_${response.id.split("-")[0]}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      docTemplateService.incrementUseCount(template.id).catch(console.error);
-      toast({
-        title: "Succès",
-        description: "PDF généré avec succès",
-      });
+      setPdfBlobUrl(url);
+      setPreviewTemplateName(template.name);
+      setPreviewOpen(true);
     } catch (error) {
       console.error("Error generating PDF:", error);
+      const message = error instanceof Error ? error.message : "Erreur inconnue";
       toast({
-        title: "Erreur",
+        title: "Erreur de génération PDF",
         variant: "destructive",
-        description: "Erreur lors de la génération du PDF",
+        description: message,
       });
     } finally {
       setIsGenerating(null);
     }
+  };
+
+  const handleDownloadPdf = () => {
+    if (!pdfBlobUrl) return;
+    const link = document.createElement("a");
+    link.href = pdfBlobUrl;
+    link.download = `${previewTemplateName}_${response.id.split("-")[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    const template = docTemplates.find((t) => t.name === previewTemplateName);
+    if (template) {
+      docTemplateService.incrementUseCount(template.id).catch(console.error);
+    }
+    toast({
+      title: "Succès",
+      description: "PDF téléchargé avec succès",
+    });
   };
 
   // Filter display fields (exclude layout elements)
@@ -383,6 +404,7 @@ export function ResponseDetail({
   );
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -462,5 +484,15 @@ export function ResponseDetail({
         )}
       </CardContent>
     </Card>
+
+    <PdfPreviewDialog
+      open={previewOpen}
+      onOpenChange={setPreviewOpen}
+      pdfUrl={pdfBlobUrl}
+      title={previewTemplateName}
+      subtitle="Aperçu du document généré"
+      onDownload={handleDownloadPdf}
+    />
+    </>
   );
 }

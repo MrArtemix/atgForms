@@ -25,22 +25,25 @@ export function MultipleChoiceField({ field, mode, value, onChange, error }: Fie
         <p className="text-sm text-[hsl(var(--muted-foreground))]">{field.description}</p>
       )}
       <div className="space-y-2">
-        {(field.options || []).map((option) => (
-          <div key={option.id} className="flex items-center space-x-2">
-            <Checkbox
-              id={`${field.id}-${option.id}`}
-              checked={selectedValues.includes(option.value)}
-              onCheckedChange={() => handleToggle(option.value)}
-              disabled={mode === "builder"}
-            />
-            <Label
-              htmlFor={`${field.id}-${option.id}`}
-              className="font-normal cursor-pointer"
-            >
-              {option.label}
-            </Label>
-          </div>
-        ))}
+        {(field.options || []).map((option, index) => {
+          const key = option.id || `opt-${index}`;
+          return (
+            <div key={key} className="flex items-center space-x-2">
+              <Checkbox
+                id={`${field.id}-${key}`}
+                checked={selectedValues.includes(option.value)}
+                onCheckedChange={() => handleToggle(option.value)}
+                disabled={mode === "builder"}
+              />
+              <Label
+                htmlFor={`${field.id}-${key}`}
+                className="font-normal cursor-pointer"
+              >
+                {option.label}
+              </Label>
+            </div>
+          );
+        })}
       </div>
       {error && <p className="text-sm text-[hsl(var(--destructive))]">{error}</p>}
     </div>
