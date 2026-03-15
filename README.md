@@ -334,12 +334,40 @@ holdings ──── filiales ──── projets
 - **Linting** : ESLint avec la configuration Next.js
 - **Formatage** : Prettier (recommandé)
 
+## Auteur & Développeur
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/MrArtemix">
+        <img src="https://github.com/MrArtemix.png" width="100px;" alt="Artemix"/><br />
+        <sub><b>Artemix</b></sub>
+      </a>
+      <br />
+      <sub>Lead Developer & Architecte</sub>
+    </td>
+    <td align="center">
+      <b>Gnazou Goudi Bernard</b>
+      <br /><br />
+      <sub>Analyste-Concepteur & Développeur<br/>de Systèmes d'Information</sub>
+    </td>
+  </tr>
+</table>
+
+| Information | Détail |
+|---|---|
+| **Développeur** | Artemix ([@MrArtemix](https://github.com/MrArtemix)) |
+| **Email** | [artemixroot@gmail.com](mailto:artemixroot@gmail.com) |
+| **Entreprise** | AIS — Adinrin Intelligence Systems |
+| **GitHub** | [github.com/MrArtemix/atgForms](https://github.com/MrArtemix/atgForms) |
+| **Site Web** | [forms.atg.ci](https://forms.atg.ci) |
+
 ## Licence
 
-Ce projet est un logiciel propriétaire développé par **ATG (Africa Technology Group)**. Tous droits réservés.
+Ce projet est un logiciel propriétaire développé par **AIS (Adinrin Intelligence Systems)**. Tous droits réservés.
 
 ---
 
 <p align="center">
-  Développé avec ❤️ par <strong>ATG</strong> — Africa Technology Group
+  Développé par <strong>AIS</strong> — Adinrin Intelligence Systems
 </p>
